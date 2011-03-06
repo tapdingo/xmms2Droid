@@ -58,7 +58,7 @@ public class ConnectedScreen extends TabActivity {
         
         getTabHost().setCurrentTab(0);
         
-        setVolume();
+        updateVolume();
 
     }
     
@@ -96,7 +96,7 @@ public class ConnectedScreen extends TabActivity {
 		}
 	};
 	
-	private void setVolume()
+	private void updateVolume()
 	{
 		ByteBuffer volReqMsg = m_msgWriter.generateVolReqMsg();
 		m_app.netModule.send(volReqMsg);
