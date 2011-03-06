@@ -50,7 +50,7 @@ public class xmmsMsgWriter {
 				volReqMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
 				IPCCommand.getCommandId(IPCCommands.VOLGET),
-				1,
+				127,
 				0);	
 		
 		volReqMsg.flip();

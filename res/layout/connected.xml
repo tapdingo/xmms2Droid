@@ -39,6 +39,14 @@ android:id="@android:id/tabhost"
 		    				<Button android:layout_width="wrap_content" android:text="DecVol" android:layout_height="wrap_content" android:id="@+id/decVol"></Button>
 		    				<Button android:layout_width="wrap_content" android:text="Mute" android:layout_height="wrap_content" android:id="@+id/mute"></Button>
     					</TableRow>
+    					<TableRow>
+	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Left Vol.:"/>
+	    					<TextView  android:id="@+id/leftVol" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="100" />
+    					</TableRow>
+    					<TableRow>
+	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Right Vol.:"/>
+	    					<TextView  android:id="@+id/rightVol" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="100" />
+    					</TableRow>
     				</TableLayout>
 				</LinearLayout>
 				<ListView

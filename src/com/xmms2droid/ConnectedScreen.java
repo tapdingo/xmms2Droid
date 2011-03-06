@@ -1,24 +1,34 @@
 package com.xmms2droid;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TabHost;
+import android.widget.TextView;
 import android.app.TabActivity;
 
 public class ConnectedScreen extends TabActivity {
 	
+	private XMMS2DroidApp m_app = null;
 	private Button m_stopButton = null;
 	private Button m_startButton = null;
 	private Button m_pauseButton = null;
+	private Button m_incVolButton = null;
 	private xmmsMsgWriter m_msgWriter = new xmmsMsgWriter();
+	
+	private TextView m_leftVol = null;
+	private TextView m_rightVol = null;
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        m_app = (XMMS2DroidApp) getApplication();
         
         setContentView(R.layout.connected);
         m_stopButton = (Button) findViewById(R.id.stopButton);
@@ -27,6 +37,11 @@ public class ConnectedScreen extends TabActivity {
         m_startButton.setOnClickListener(startListener);
         m_pauseButton = (Button) findViewById(R.id.pauseButton);
         m_pauseButton.setOnClickListener(pauseListener);
+        m_incVolButton = (Button) findViewById(R.id.incVol);
+        m_incVolButton.setOnClickListener(incVolListener);
+        
+        m_leftVol = (TextView) findViewById(R.id.leftVol);
+        m_rightVol = (TextView) findViewById(R.id.rightVol);
         
         TabHost.TabSpec spec = getTabHost().newTabSpec("tag1");
         spec.setContent(R.id.controls);
@@ -38,16 +53,14 @@ public class ConnectedScreen extends TabActivity {
         spec.setIndicator("Playlist");
         getTabHost().addTab(spec);
         
-        getTabHost().setCurrentTab(0);
-        
-        
+        getTabHost().setCurrentTab(0); 
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View arg0) {
 			ByteBuffer startMsg = m_msgWriter.generatePlayMsg();
-			((XMMS2DroidApp) getApplication()).netModule.send(startMsg);
+			m_app.netModule.send(startMsg);
 			
 		}
 	};
@@ -56,7 +69,7 @@ public class ConnectedScreen extends TabActivity {
 		@Override
 		public void onClick(View arg0) {
 			ByteBuffer stopMsg = m_msgWriter.generateStopMsg();
-			((XMMS2DroidApp) getApplication()).netModule.send(stopMsg);			
+			m_app.netModule.send(stopMsg);			
 		}
 	};
 	
@@ -70,13 +83,22 @@ public class ConnectedScreen extends TabActivity {
 		}
 	};
 	
-	private View.OnClickListener setVolListener = new View.OnClickListener() {
+	private View.OnClickListener incVolListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View arg0) {
+			
+			//TODO Request the current volume at startup instead of on demand
 			ByteBuffer volReqMsg = m_msgWriter.generateVolReqMsg();
-			((XMMS2DroidApp) getApplication()).netModule.send(volReqMsg);
+			m_app.netModule.send(volReqMsg);
+						
+			ByteBuffer resp = ByteBuffer.allocate(1024);
+			int bytesRead = m_app.netModule.read(resp);
+			HashMap<String, Integer> volumes = DictParser.parseDict(resp);
 			
+			m_leftVol.setText(String.valueOf(volumes.get("left")));
+			m_rightVol.setText(String.valueOf(volumes.get("right")));
 			
+			Log.d("CON_SCREEN", "READ COMPLETE");
 		}
 	};
 

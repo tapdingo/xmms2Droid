@@ -41,5 +41,17 @@ public class NetModule {
 		m_sockChannel.close();
 		return true;
 	}
+	
+	public int read(ByteBuffer tgt)
+	{
+		int readBytes = 0;
+		try {
+			readBytes = m_sockChannel.read(tgt);
+		} catch (IOException e) {
+			Log.d(m_tag, "ERROR READING FROM SOCKET");
+			e.printStackTrace();
+		}
+		return readBytes;
+	}
 
 }

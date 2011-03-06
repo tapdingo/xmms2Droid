@@ -14,17 +14,19 @@ public final class R {
         public static final int icon=0x7f020000;
     }
     public static final class id {
-        public static final int conButton=0x7f05000a;
+        public static final int conButton=0x7f05000c;
         public static final int controls=0x7f050000;
         public static final int decVol=0x7f050005;
         public static final int incVol=0x7f050004;
+        public static final int leftVol=0x7f050007;
         public static final int mute=0x7f050006;
         public static final int pauseButton=0x7f050002;
         public static final int playButton=0x7f050001;
-        public static final int playlist=0x7f050007;
-        public static final int srvIp=0x7f050009;
+        public static final int playlist=0x7f050009;
+        public static final int rightVol=0x7f050008;
+        public static final int srvIp=0x7f05000b;
         public static final int stopButton=0x7f050003;
-        public static final int title=0x7f050008;
+        public static final int title=0x7f05000a;
     }
     public static final class layout {
         public static final int connected=0x7f030000;
