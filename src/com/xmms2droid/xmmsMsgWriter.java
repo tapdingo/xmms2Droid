@@ -29,7 +29,7 @@ public class xmmsMsgWriter {
 		stopMsg.flip();
 		return stopMsg;
 	}
-	
+		
 	public ByteBuffer generatePauseMsg()
 	{
 		ByteBuffer pauseMsg = allocateHeader();

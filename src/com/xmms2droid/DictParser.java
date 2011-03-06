@@ -9,9 +9,13 @@ public class DictParser {
 	public static HashMap<String, Integer> parseDict(ByteBuffer buf)
 	{
 		buf.flip();
-		int respLen = parseHeader(buf);
+		
+		//Currently we only use the implicit lengths
+		//Should be fixed for a more robust approach
+		parseHeader(buf);
 		
 		//TypeBla
+		//TODO Make a list of response types
 		buf.getInt();
 		//LenBla
 		int len = buf.getInt();
@@ -65,9 +69,10 @@ public class DictParser {
 	}
 	private static int parseHeader(ByteBuffer buf)
 	{
-		int obj = buf.getInt();
-		int cmd = buf.getInt();
-		int cookie = buf.getInt();
+		//Currently we're not interested in header values of the response...
+		buf.getInt(); //Object
+		buf.getInt(); //Command
+		buf.getInt(); //Cookie
 		int payloadLen = buf.getInt();
 		return payloadLen;
 	}

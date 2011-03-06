@@ -23,6 +23,9 @@ public class ConnectedScreen extends TabActivity {
 	private TextView m_leftVol = null;
 	private TextView m_rightVol = null;
 	
+	private int m_leftVolume = 0;
+	private int m_rightVolume = 0;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,7 +56,10 @@ public class ConnectedScreen extends TabActivity {
         spec.setIndicator("Playlist");
         getTabHost().addTab(spec);
         
-        getTabHost().setCurrentTab(0); 
+        getTabHost().setCurrentTab(0);
+        
+        setVolume();
+
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
@@ -86,20 +92,23 @@ public class ConnectedScreen extends TabActivity {
 	private View.OnClickListener incVolListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View arg0) {
-			
-			//TODO Request the current volume at startup instead of on demand
-			ByteBuffer volReqMsg = m_msgWriter.generateVolReqMsg();
-			m_app.netModule.send(volReqMsg);
-						
-			ByteBuffer resp = ByteBuffer.allocate(1024);
-			int bytesRead = m_app.netModule.read(resp);
-			HashMap<String, Integer> volumes = DictParser.parseDict(resp);
-			
-			m_leftVol.setText(String.valueOf(volumes.get("left")));
-			m_rightVol.setText(String.valueOf(volumes.get("right")));
-			
 			Log.d("CON_SCREEN", "READ COMPLETE");
 		}
 	};
+	
+	private void setVolume()
+	{
+		ByteBuffer volReqMsg = m_msgWriter.generateVolReqMsg();
+		m_app.netModule.send(volReqMsg);
+		
+		ByteBuffer resp = ByteBuffer.allocate(1024);
+		m_app.netModule.read(resp);
+		HashMap<String, Integer> volumes = DictParser.parseDict(resp);
+		
+		m_leftVolume = volumes.get("left");
+		m_rightVolume = volumes.get("right");
+		m_leftVol.setText(String.valueOf(m_leftVolume));
+		m_rightVol.setText(String.valueOf(m_rightVolume));
+	}
 
 }
