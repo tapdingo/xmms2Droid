@@ -38,6 +38,8 @@ public class ConnectedScreen extends TabActivity {
 	private Button m_incVolButton = null;
 	private xmmsMsgWriter m_msgWriter = new xmmsMsgWriter();
 	
+	private NetModule m_netModule = null;
+	
 	private TextView m_leftVol = null;
 	private TextView m_rightVol = null;
 	
@@ -50,6 +52,7 @@ public class ConnectedScreen extends TabActivity {
         super.onCreate(savedInstanceState);
         
         m_app = (XMMS2DroidApp) getApplication();
+        m_netModule = m_app.netModule;
         
         setContentView(R.layout.connected);
         m_stopButton = (Button) findViewById(R.id.stopButton);
@@ -77,6 +80,8 @@ public class ConnectedScreen extends TabActivity {
         getTabHost().setCurrentTab(0);
         
         updateVolume();
+        
+        new Thread(readerTask).start();
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
@@ -129,5 +134,24 @@ public class ConnectedScreen extends TabActivity {
 		m_leftVol.setText(String.valueOf(m_leftVolume));
 		m_rightVol.setText(String.valueOf(m_rightVolume));
 	}
+	
+	private Runnable readerTask = new Runnable() {
+		
+		private ReadHandler m_readHandler = null;
+		private int m_readBytes = 0;
+		@Override
+		public void run() {
+			
+			while(true)
+			{
+				m_readHandler = new ReadHandler(m_netModule);
+				if (m_readHandler.readMsg())
+				{
+					ByteBuffer msg = m_readHandler.getMsg();
+				}
+				m_readBytes = m_readHandler.getReadBytes();
+			}
+		}
+	};
 
 }
