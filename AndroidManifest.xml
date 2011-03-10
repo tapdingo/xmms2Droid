@@ -6,7 +6,7 @@
     <uses-sdk android:minSdkVersion="3" />
     <uses-permission android:name="android.permission.INTERNET" />
     <application android:label="@string/app_name" android:permission="android.permission.INTERNET" android:name="XMMS2DroidApp">
-        <activity android:name="com.xmms2droid.startScreen">
+        <activity android:name="StartScreen">
             <intent-filter>
              	<action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

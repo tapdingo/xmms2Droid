@@ -20,8 +20,6 @@ package com.xmms2droid;
 
 import java.nio.ByteBuffer;
 
-import android.util.Log;
-
 import com.xmms2droid.xmmsMsgHandling.XmmsHeaderParser;
 
 public class ReadHandler {
@@ -68,10 +66,8 @@ public class ReadHandler {
 	private Boolean readPayload()
 	{
 		m_readBytes += m_netModule.read(m_msgBuffer);
-		Log.d("ReadHandler", "Got " + m_readBytes + "Bytes");
 		if ( 0 == m_msgBuffer.remaining())
 		{
-			Log.d("ReadHandler", "Completed Payload!");
 			m_gotHeader = false;
 			return true;
 		}

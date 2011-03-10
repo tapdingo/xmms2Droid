@@ -19,7 +19,6 @@
 package com.xmms2droid.xmmsMsgHandling;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
 public class XmmsHeaderParser {
 	

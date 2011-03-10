@@ -25,7 +25,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Button;
 
-public class startScreen extends Activity {
+public class StartScreen extends Activity {
 	
 	private EditText m_srvIp = null;
 	private Button m_conButton = null;
@@ -57,7 +57,7 @@ public class startScreen extends Activity {
 				}
 				else
 				{	
-					Intent newIntent = new Intent(startScreen.this, ConnectedScreen.class);
+					Intent newIntent = new Intent(StartScreen.this, ConnectedScreen.class);
 					startActivity(newIntent);
 					m_conButton.setText("CONNECTED");
 				}
