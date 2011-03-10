@@ -34,8 +34,11 @@ public class ReadHandler {
 	public Boolean readMsg()
 	{
 		m_readBytes += m_netModule.read(m_headBuffer);
+		
+		//Header has been received completely
 		if ( 0 == m_headBuffer.remaining())
 		{
+			
 			m_headBuffer.clear();
 		}
 		return false;

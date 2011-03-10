@@ -21,7 +21,10 @@ package com.xmms2droid;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
+import com.xmms2droid.xmmsMsgHandling.XmmsMsgWriter;
+
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -36,7 +39,7 @@ public class ConnectedScreen extends TabActivity {
 	private Button m_startButton = null;
 	private Button m_pauseButton = null;
 	private Button m_incVolButton = null;
-	private xmmsMsgWriter m_msgWriter = new xmmsMsgWriter();
+	private XmmsMsgWriter m_msgWriter = new XmmsMsgWriter();
 	
 	private NetModule m_netModule = null;
 	
@@ -88,7 +91,7 @@ public class ConnectedScreen extends TabActivity {
 		@Override
 		public void onClick(View arg0) {
 			ByteBuffer startMsg = m_msgWriter.generatePlayMsg();
-			m_app.netModule.send(startMsg);
+			m_netModule.send(startMsg);
 			
 		}
 	};
@@ -97,7 +100,7 @@ public class ConnectedScreen extends TabActivity {
 		@Override
 		public void onClick(View arg0) {
 			ByteBuffer stopMsg = m_msgWriter.generateStopMsg();
-			m_app.netModule.send(stopMsg);
+			m_netModule.send(stopMsg);
 		}
 	};
 	
@@ -106,9 +109,8 @@ public class ConnectedScreen extends TabActivity {
 		@Override
 		public void onClick(View arg0) {
 			ByteBuffer pauseMsg = m_msgWriter.generatePauseMsg();
-			((XMMS2DroidApp) getApplication()).netModule.send(pauseMsg);
-			ByteBuffer resp = ByteBuffer.allocate(1024);
-			
+			m_netModule.send(pauseMsg);
+			ByteBuffer resp = ByteBuffer.allocate(1024);		
 			m_app.netModule.read(resp);
 		}
 	};
@@ -138,18 +140,18 @@ public class ConnectedScreen extends TabActivity {
 	private Runnable readerTask = new Runnable() {
 		
 		private ReadHandler m_readHandler = null;
-		private int m_readBytes = 0;
 		@Override
 		public void run() {
 			
 			while(true)
 			{
+				//Sleep a little while before trying to read again...
+				//Maybe lower thread priority might also do the trick...
+				SystemClock.sleep(200);
 				m_readHandler = new ReadHandler(m_netModule);
 				if (m_readHandler.readMsg())
 				{
-					ByteBuffer msg = m_readHandler.getMsg();
 				}
-				m_readBytes = m_readHandler.getReadBytes();
 			}
 		}
 	};

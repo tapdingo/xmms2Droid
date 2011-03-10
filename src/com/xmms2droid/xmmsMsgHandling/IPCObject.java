@@ -16,40 +16,35 @@
  *   along with XMMS2Droid.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package com.xmms2droid;
+package com.xmms2droid.xmmsMsgHandling;
 
 import java.util.HashMap;
-
-enum IPCCommands {
-	START,
-	STOP,
-	PAUSE,
-	VOLGET, 
-	VOLSET
+enum IPCObjects {
+	MAIN, 
+	PLAYLIST, 
+	CONFIG,
+	OUTPUT
 }
 
-public class IPCCommand {
-	
-	private static HashMap<IPCCommands, Integer> m_commands;
+public class IPCObject {
+	private static HashMap<IPCObjects, Integer> m_objects;
 	private static boolean initialized = false;
-	
-	static public int getCommandId(IPCCommands cmdName)
+		
+	public static int getObjectId(IPCObjects obj)
 	{
 		if (!initialized)
 		{
-			m_commands = new HashMap<IPCCommands, Integer>();
-			m_commands.put(IPCCommands.START, 29);
-			m_commands.put(IPCCommands.STOP, 30);
-			m_commands.put(IPCCommands.PAUSE, 31);
-			m_commands.put(IPCCommands.VOLSET, 40);
-			m_commands.put(IPCCommands.VOLGET, 41);
+			m_objects = new HashMap<IPCObjects, Integer>();
+			m_objects.put(IPCObjects.MAIN, 0);
+			m_objects.put(IPCObjects.PLAYLIST, 1);
+			m_objects.put(IPCObjects.CONFIG, 2);
+			m_objects.put(IPCObjects.OUTPUT, 3);
 			initialized = true;
 		}
-		if (m_commands.containsKey(cmdName))
+		if (m_objects.containsKey(obj))
 		{
-			return m_commands.get(cmdName);
+			return m_objects.get(obj);
 		}
 		return -1;
 	}
-
 }

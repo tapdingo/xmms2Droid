@@ -16,11 +16,12 @@
  *   along with XMMS2Droid.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package com.xmms2droid;
+package com.xmms2droid.xmmsMsgHandling;
 
 import java.nio.ByteBuffer;
 
-public class xmmsMsgWriter {
+
+public class XmmsMsgWriter {
 	
 	public ByteBuffer generatePlayMsg()
 	{
