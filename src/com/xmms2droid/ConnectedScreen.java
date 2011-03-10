@@ -77,7 +77,6 @@ public class ConnectedScreen extends TabActivity {
         getTabHost().setCurrentTab(0);
         
         updateVolume();
-
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
@@ -106,7 +105,6 @@ public class ConnectedScreen extends TabActivity {
 			ByteBuffer resp = ByteBuffer.allocate(1024);
 			
 			m_app.netModule.read(resp);
-			updateVolume();
 		}
 	};
 	
