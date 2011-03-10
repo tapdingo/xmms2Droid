@@ -20,12 +20,17 @@ package com.xmms2droid;
 
 import java.nio.ByteBuffer;
 
+import android.util.Log;
+
+import com.xmms2droid.xmmsMsgHandling.XmmsHeaderParser;
+
 public class ReadHandler {
 	
 	private NetModule m_netModule = null;
 	private ByteBuffer m_headBuffer = ByteBuffer.allocate(16); //16 Byte Header length
 	private ByteBuffer m_msgBuffer = null; //will be allocated to actual msg size
 	private int m_readBytes = 0;
+	public boolean m_gotHeader = false;
 	
 	public ReadHandler(NetModule netMod) {
 		m_netModule = netMod;
@@ -33,16 +38,46 @@ public class ReadHandler {
 	
 	public Boolean readMsg()
 	{
+		if (!m_gotHeader)
+		{
+			readHeader();
+		}
+		else
+		{
+			if (readPayload())
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private void readHeader()
+	{
 		m_readBytes += m_netModule.read(m_headBuffer);
 		
 		//Header has been received completely
 		if ( 0 == m_headBuffer.remaining())
 		{
-			
+			m_msgBuffer = ByteBuffer.allocate(XmmsHeaderParser.getPayloadLen(m_headBuffer));
 			m_headBuffer.clear();
+		}
+		m_gotHeader = true;
+	}
+	
+	private Boolean readPayload()
+	{
+		m_readBytes += m_netModule.read(m_msgBuffer);
+		Log.d("ReadHandler", "Got " + m_readBytes + "Bytes");
+		if ( 0 == m_msgBuffer.remaining())
+		{
+			Log.d("ReadHandler", "Completed Payload!");
+			m_gotHeader = false;
+			return true;
 		}
 		return false;
 	}
+	
 	
 	public ByteBuffer getMsg()
 	{

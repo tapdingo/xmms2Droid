@@ -122,6 +122,7 @@ public class ConnectedScreen extends TabActivity {
 		}
 	};
 	
+	//TODO Move this to the rest of the parsing section...
 	private void updateVolume()
 	{
 		ByteBuffer volReqMsg = m_msgWriter.generateVolReqMsg();
@@ -142,15 +143,18 @@ public class ConnectedScreen extends TabActivity {
 		private ReadHandler m_readHandler = null;
 		@Override
 		public void run() {
+			m_readHandler = new ReadHandler(m_netModule);
 			
 			while(true)
 			{
 				//Sleep a little while before trying to read again...
 				//Maybe lower thread priority might also do the trick...
 				SystemClock.sleep(200);
-				m_readHandler = new ReadHandler(m_netModule);
+				
 				if (m_readHandler.readMsg())
 				{
+					ByteBuffer msg = m_readHandler.getMsg();
+					msg.reset();	
 				}
 			}
 		}
