@@ -21,8 +21,8 @@ package com.xmms2droid;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
+import com.xmms2droid.xmmsMsgHandling.XmmsMsgParser;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgWriter;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -44,9 +44,6 @@ public class ConnectedScreen extends TabActivity {
 	
 	private TextView m_leftVol = null;
 	private TextView m_rightVol = null;
-	
-	private int m_leftVolume = 0;
-	private int m_rightVolume = 0;
 	
     /** Called when the activity is first created. */
     @Override
@@ -81,9 +78,8 @@ public class ConnectedScreen extends TabActivity {
         
         getTabHost().setCurrentTab(0);
         
-        updateVolume();
-        
         new Thread(readerTask).start();
+        updateVolume();
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
@@ -125,14 +121,9 @@ public class ConnectedScreen extends TabActivity {
 		ByteBuffer volReqMsg = m_msgWriter.generateVolReqMsg();
 		m_app.netModule.send(volReqMsg);
 		
-		ByteBuffer resp = ByteBuffer.allocate(1024);
-		m_app.netModule.read(resp);
-		HashMap<String, Integer> volumes = DictParser.parseDict(resp);
+		/*
+		*/
 		
-		m_leftVolume = volumes.get("left");
-		m_rightVolume = volumes.get("right");
-		m_leftVol.setText(String.valueOf(m_leftVolume));
-		m_rightVol.setText(String.valueOf(m_rightVolume));
 	}
 	
 	private Runnable readerTask = new Runnable() {
@@ -146,6 +137,9 @@ public class ConnectedScreen extends TabActivity {
 			{
 				if (m_readHandler.readMsg())
 				{
+					ByteBuffer recHeader = m_readHandler.getHeader();
+					ByteBuffer recMsg = m_readHandler.getMsg();
+					XmmsMsgParser.parseMsg(recHeader, recMsg);
 				}
 			}
 		}

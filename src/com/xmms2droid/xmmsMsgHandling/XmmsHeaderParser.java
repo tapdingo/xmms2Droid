@@ -29,25 +29,25 @@ public class XmmsHeaderParser {
 	
 	static public int getObject (ByteBuffer header)
 	{
-		header.flip();
+		header.rewind();
 		return header.asIntBuffer().get(OBJECT_POS);	
 	}
 	
 	static public int getCommand(ByteBuffer header)
 	{
-		header.flip();
+		header.rewind();
 		return header.asIntBuffer().get(COMMAND_POS);	
 	}
 	
 	static public int getCookie(ByteBuffer header)
 	{
-		header.flip();
+		header.rewind();
 		return header.asIntBuffer().get(COOKIE_POS);
 	}
 	
 	static public int getPayloadLen(ByteBuffer header)
 	{
-		header.flip();
+		header.rewind();
 		return header.asIntBuffer().get(PAYLOAD_LEN_POS);
 	}
 }

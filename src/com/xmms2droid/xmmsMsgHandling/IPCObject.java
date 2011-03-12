@@ -34,17 +34,37 @@ public class IPCObject {
 	{
 		if (!initialized)
 		{
-			m_objects = new HashMap<IPCObjects, Integer>();
-			m_objects.put(IPCObjects.MAIN, 0);
-			m_objects.put(IPCObjects.PLAYLIST, 1);
-			m_objects.put(IPCObjects.CONFIG, 2);
-			m_objects.put(IPCObjects.OUTPUT, 3);
-			initialized = true;
+			init();
 		}
+		
 		if (m_objects.containsKey(obj))
 		{
 			return m_objects.get(obj);
 		}
 		return -1;
+	}
+	
+	public static IPCObjects getObject(int id)
+	{
+		if (!initialized)
+		{
+			init();
+		}
+		
+		if (m_objects.containsValue(id))
+		{
+			return IPCObjects.OUTPUT;
+		}
+		return IPCObjects.CONFIG;
+	}
+	
+	private static void init()
+	{
+		m_objects = new HashMap<IPCObjects, Integer>();
+		m_objects.put(IPCObjects.MAIN, 0);
+		m_objects.put(IPCObjects.PLAYLIST, 1);
+		m_objects.put(IPCObjects.CONFIG, 2);
+		m_objects.put(IPCObjects.OUTPUT, 3);
+		initialized = true;
 	}
 }
