@@ -19,32 +19,63 @@
 package com.xmms2droid.xmmsMsgHandling;
 
 import java.util.HashMap;
+
 enum IPCObjects {
 	MAIN, 
 	PLAYLIST, 
 	CONFIG,
-	OUTPUT
+	OUTPUT, 
+	UNKNOWN
 }
 
 public class IPCObject {
+	private static HashMap<Integer, IPCObjects> m_ids;
 	private static HashMap<IPCObjects, Integer> m_objects;
 	private static boolean initialized = false;
+	
 		
 	public static int getObjectId(IPCObjects obj)
 	{
 		if (!initialized)
 		{
-			m_objects = new HashMap<IPCObjects, Integer>();
-			m_objects.put(IPCObjects.MAIN, 0);
-			m_objects.put(IPCObjects.PLAYLIST, 1);
-			m_objects.put(IPCObjects.CONFIG, 2);
-			m_objects.put(IPCObjects.OUTPUT, 3);
-			initialized = true;
+			init();
 		}
+		
 		if (m_objects.containsKey(obj))
 		{
 			return m_objects.get(obj);
 		}
 		return -1;
+	}
+	
+	public static IPCObjects getObject(int id)
+	{
+		if (!initialized)
+		{
+			init();
+		}
+		
+		if (m_ids.containsKey(id))
+		{
+			return m_ids.get(id);
+		}
+		return IPCObjects.UNKNOWN;
+	}
+	
+	private static void init()
+	{
+		//TODO Java BIMAP?
+		//This will only work, if the lists are complete without holes..
+		IPCObjects[] objects = IPCObjects.values();
+		m_objects = new HashMap<IPCObjects, Integer>();
+		m_ids = new HashMap<Integer, IPCObjects>();
+		
+		for (int i = 0; i < objects.length; i++)
+		{
+			m_objects.put(objects[i], i);
+			m_ids.put(i, objects[i]);
+			
+		}
+		initialized = true;
 	}
 }

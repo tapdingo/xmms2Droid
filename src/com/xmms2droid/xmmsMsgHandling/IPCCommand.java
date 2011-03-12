@@ -25,31 +25,60 @@ enum IPCCommands {
 	STOP,
 	PAUSE,
 	VOLGET, 
-	VOLSET
+	VOLSET, 
+	UNKNOWN
 }
 
 public class IPCCommand {
 	
 	private static HashMap<IPCCommands, Integer> m_commands;
+	private static HashMap<Integer, IPCCommands> m_ids;
 	private static boolean initialized = false;
+	
+	//TODO Until the Command Enum is complete..
+	private static final int shiftFac = 29;
 	
 	static public int getCommandId(IPCCommands cmdName)
 	{
 		if (!initialized)
 		{
-			m_commands = new HashMap<IPCCommands, Integer>();
-			m_commands.put(IPCCommands.START, 29);
-			m_commands.put(IPCCommands.STOP, 30);
-			m_commands.put(IPCCommands.PAUSE, 31);
-			m_commands.put(IPCCommands.VOLSET, 40);
-			m_commands.put(IPCCommands.VOLGET, 41);
-			initialized = true;
+			init();
 		}
 		if (m_commands.containsKey(cmdName))
 		{
 			return m_commands.get(cmdName);
 		}
 		return -1;
+	}
+	
+	static public IPCCommands getCommand(int cmd)
+	{
+		if (!initialized)
+		{
+			init();
+		}
+		if (m_ids.containsKey(cmd))
+		{
+			return m_ids.get(cmd);
+		}
+		return IPCCommands.UNKNOWN;
+		
+	}
+	
+	static private void init()
+	{
+		IPCCommands[] commands = IPCCommands.values();
+		
+		m_commands = new HashMap<IPCCommands, Integer>();
+		m_ids = new HashMap<Integer, IPCCommands>();
+		
+		for (int i = 0; i < commands.length; i++)
+		{
+			m_commands.put(commands[i], i + shiftFac);
+			m_ids.put(i + shiftFac, commands[i]);
+		}
+		initialized = true;
+		
 	}
 
 }

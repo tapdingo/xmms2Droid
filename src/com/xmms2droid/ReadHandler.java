@@ -58,7 +58,6 @@ public class ReadHandler {
 		if ( 0 == m_headBuffer.remaining())
 		{
 			m_msgBuffer = ByteBuffer.allocate(XmmsHeaderParser.getPayloadLen(m_headBuffer));
-			m_headBuffer.clear();
 		}
 		m_gotHeader = true;
 	}
@@ -77,7 +76,15 @@ public class ReadHandler {
 	
 	public ByteBuffer getMsg()
 	{
+		
 		return m_msgBuffer.duplicate();
+	}
+	
+	public ByteBuffer getHeader()
+	{
+		ByteBuffer retHeader = m_headBuffer.duplicate();
+		m_headBuffer.clear();
+		return retHeader;
 	}
 	
 	public int getReadBytes()
