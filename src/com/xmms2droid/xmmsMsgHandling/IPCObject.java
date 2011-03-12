@@ -64,20 +64,18 @@ public class IPCObject {
 	
 	private static void init()
 	{
-		//TODO Automize this shit
+		//TODO Java BIMAP?
+		//This will only work, if the lists are complete without holes..
+		IPCObjects[] objects = IPCObjects.values();
 		m_objects = new HashMap<IPCObjects, Integer>();
-		m_objects.put(IPCObjects.MAIN, 0);
-		m_objects.put(IPCObjects.PLAYLIST, 1);
-		m_objects.put(IPCObjects.CONFIG, 2);
-		m_objects.put(IPCObjects.OUTPUT, 3);
-		m_objects.put(IPCObjects.UNKNOWN, 4);
-		
 		m_ids = new HashMap<Integer, IPCObjects>();
-		m_ids.put(0, IPCObjects.MAIN);
-		m_ids.put(1, IPCObjects.PLAYLIST);
-		m_ids.put(2, IPCObjects.CONFIG);
-		m_ids.put(3, IPCObjects.OUTPUT);
-		m_ids.put(4, IPCObjects.UNKNOWN);
+		
+		for (int i = 0; i < objects.length; i++)
+		{
+			m_objects.put(objects[i], i);
+			m_ids.put(i, objects[i]);
+			
+		}
 		initialized = true;
 	}
 }
