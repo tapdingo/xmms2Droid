@@ -19,16 +19,20 @@
 package com.xmms2droid.xmmsMsgHandling;
 
 import java.util.HashMap;
+
 enum IPCObjects {
 	MAIN, 
 	PLAYLIST, 
 	CONFIG,
-	OUTPUT
+	OUTPUT, 
+	UNKNOWN
 }
 
 public class IPCObject {
+	private static HashMap<Integer, IPCObjects> m_ids;
 	private static HashMap<IPCObjects, Integer> m_objects;
 	private static boolean initialized = false;
+	
 		
 	public static int getObjectId(IPCObjects obj)
 	{
@@ -51,20 +55,29 @@ public class IPCObject {
 			init();
 		}
 		
-		if (m_objects.containsValue(id))
+		if (m_ids.containsKey(id))
 		{
-			return IPCObjects.OUTPUT;
+			return m_ids.get(id);
 		}
-		return IPCObjects.CONFIG;
+		return IPCObjects.UNKNOWN;
 	}
 	
 	private static void init()
 	{
+		//TODO Automize this shit
 		m_objects = new HashMap<IPCObjects, Integer>();
 		m_objects.put(IPCObjects.MAIN, 0);
 		m_objects.put(IPCObjects.PLAYLIST, 1);
 		m_objects.put(IPCObjects.CONFIG, 2);
 		m_objects.put(IPCObjects.OUTPUT, 3);
+		m_objects.put(IPCObjects.UNKNOWN, 4);
+		
+		m_ids = new HashMap<Integer, IPCObjects>();
+		m_ids.put(0, IPCObjects.MAIN);
+		m_ids.put(1, IPCObjects.PLAYLIST);
+		m_ids.put(2, IPCObjects.CONFIG);
+		m_ids.put(3, IPCObjects.OUTPUT);
+		m_ids.put(4, IPCObjects.UNKNOWN);
 		initialized = true;
 	}
 }
