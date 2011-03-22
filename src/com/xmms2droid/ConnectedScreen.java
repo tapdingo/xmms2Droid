@@ -103,8 +103,9 @@ public class ConnectedScreen extends TabActivity {
 		
 		@Override
 		public void onClick(View arg0) {
-			ByteBuffer pauseMsg = m_msgWriter.generatePauseMsg();
-			m_netModule.send(pauseMsg);
+			//ByteBuffer pauseMsg = m_msgWriter.generatePauseMsg();
+			//m_netModule.send(pauseMsg);
+			updateVolume();
 		}
 	};
 	
@@ -115,15 +116,10 @@ public class ConnectedScreen extends TabActivity {
 		}
 	};
 	
-	//TODO Move this to the rest of the parsing section...
 	private void updateVolume()
 	{
 		ByteBuffer volReqMsg = m_msgWriter.generateVolReqMsg();
 		m_app.netModule.send(volReqMsg);
-		
-		/*
-		*/
-		
 	}
 	
 	private Runnable readerTask = new Runnable() {
@@ -140,6 +136,7 @@ public class ConnectedScreen extends TabActivity {
 					ByteBuffer recHeader = m_readHandler.getHeader();
 					ByteBuffer recMsg = m_readHandler.getMsg();
 					XmmsMsgParser.parseMsg(recHeader, recMsg);
+					m_readHandler.clear();
 				}
 			}
 		}

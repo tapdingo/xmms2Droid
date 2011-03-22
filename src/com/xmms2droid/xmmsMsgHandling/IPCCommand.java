@@ -24,8 +24,16 @@ enum IPCCommands {
 	START,
 	STOP,
 	PAUSE,
-	VOLGET, 
-	VOLSET, 
+	DECODER_KILL,
+	CPLAYTIME,
+	SEEKMS,
+	SEEKMS_REL,
+	SEEKSAMPLES,
+	SEEKSAMPLES_REL,
+	OUTPUT_STATUS,
+	CURRENTID,
+	VOLSET,
+	VOLGET,
 	UNKNOWN
 }
 
@@ -78,7 +86,6 @@ public class IPCCommand {
 			m_ids.put(i + shiftFac, commands[i]);
 		}
 		initialized = true;
-		
 	}
 
 }

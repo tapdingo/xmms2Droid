@@ -25,12 +25,7 @@ import java.util.HashMap;
 public class DictParser {
 	
 	public static HashMap<String, Integer> parseDict(ByteBuffer buf)
-	{
-		buf.flip();
-		
-		//TypeBla
-		//TODO Make a list of response types
-		buf.getInt();
+	{	
 		//LenBla
 		int len = buf.getInt();
 		

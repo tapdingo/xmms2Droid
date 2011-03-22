@@ -27,34 +27,38 @@ public class XmmsMsgParser {
 	public static void parseMsg(ByteBuffer header, ByteBuffer msg)
 	{
 		int headerObject = XmmsHeaderParser.getObject(header);
-		int headerCommand = XmmsHeaderParser.getCommand(header);
+		int headerSignal= XmmsHeaderParser.getCommand(header);
 		
 		IPCObjects object = IPCObject.getObject(headerObject);
-		IPCCommands command = IPCCommand.getCommand(headerCommand);
+		IPCSignals signal = IPCSignal.getSignal(headerSignal);
 		
 		switch(object)
 		{
 		case OUTPUT:
-			parseOutputMsg(msg, command);
+			parseOutputMsg(msg, signal);
 			break;
 		case MAIN:
-			parseMainMsg(msg, command);
+			parseMainMsg(msg, signal);
 			break;
 		case CONFIG:
-			parseConfigMsg(msg, command);
+			parseConfigMsg(msg, signal);
 			break;
 		}
 	}
 	
 	public static void parseVolMsg(ByteBuffer msg)
 	{
-		HashMap<String, Integer> volumes = DictParser.parseDict(msg);
-		
-		int leftVolume = volumes.get("left");
-		int rightVolume = volumes.get("right");
+		msg.flip();
+		XmmsCollTypes type = XmmsCollType.getCollType(msg.getInt());
+		if (XmmsCollTypes.XMMSV_TYPE_DICT == XmmsCollType.getCollType(msg.getInt()))
+		{
+			HashMap<String, Integer> volumes = DictParser.parseDict(msg);
+			int leftVolume = volumes.get("left");
+			int rightVolume = volumes.get("right");
+		}
 	}
 	
-	public static void parseOutputMsg(ByteBuffer msg, IPCCommands cmd)
+	public static void parseOutputMsg(ByteBuffer msg, IPCSignals signal)
 	{
 		//TODO replace this with something, that actually works...
 		//Check the commands that have to be used...
@@ -65,11 +69,11 @@ public class XmmsMsgParser {
 		
 	}
 	
-	public static void parseConfigMsg(ByteBuffer msg, IPCCommands cmd)
+	public static void parseConfigMsg(ByteBuffer msg, IPCSignals cmd)
 	{
 	}
 	
-	public static void parseMainMsg(ByteBuffer msg, IPCCommands cmd)
+	public static void parseMainMsg(ByteBuffer msg, IPCSignals cmd)
 	{
 	}
 

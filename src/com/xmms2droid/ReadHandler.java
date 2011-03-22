@@ -76,7 +76,6 @@ public class ReadHandler {
 	
 	public ByteBuffer getMsg()
 	{
-		
 		return m_msgBuffer.duplicate();
 	}
 	
@@ -85,6 +84,12 @@ public class ReadHandler {
 		ByteBuffer retHeader = m_headBuffer.duplicate();
 		m_headBuffer.clear();
 		return retHeader;
+	}
+	
+	public void clear()
+	{
+		m_headBuffer.clear();
+		m_gotHeader = false;
 	}
 	
 	public int getReadBytes()
