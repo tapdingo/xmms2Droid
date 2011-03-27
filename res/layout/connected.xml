@@ -25,6 +25,10 @@ android:id="@android:id/tabhost"
   					android:layout_width="fill_parent"
   					android:layout_height="wrap_content"
   					>
+  					    <TableRow>
+	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Status:"/>
+	    					<TextView android:id="@+id/playStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UNKNOWN" />
+    					</TableRow>
 	  					<TableRow 
 	  					android:layout_width="fill_parent"
 	  					android:layout_height="wrap_content">
@@ -40,12 +44,8 @@ android:id="@android:id/tabhost"
 		    				<Button android:layout_width="wrap_content" android:text="Mute" android:layout_height="wrap_content" android:id="@+id/mute"></Button>
     					</TableRow>
     					<TableRow>
-	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Left Vol.:"/>
-	    					<TextView  android:id="@+id/leftVol" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" />
-    					</TableRow>
-    					<TableRow>
-	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Right Vol.:"/>
-	    					<TextView  android:id="@+id/rightVol" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" />
+	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Volume:"/>
+	    					<TextView android:id="@+id/volume" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UNKNOWN" />
     					</TableRow>
     				</TableLayout>
 				</LinearLayout>

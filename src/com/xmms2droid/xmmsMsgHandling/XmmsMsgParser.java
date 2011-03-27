@@ -28,6 +28,7 @@ public class XmmsMsgParser {
 	{
 		int headerObject = XmmsHeaderParser.getObject(header);
 		int headerSignal= XmmsHeaderParser.getCommand(header);
+		int cookie = XmmsHeaderParser.getCookie(header);
 		
 		IPCObjects object = IPCObject.getObject(headerObject);
 		IPCSignals signal = IPCSignal.getSignal(headerSignal);
@@ -35,11 +36,11 @@ public class XmmsMsgParser {
 		switch(object)
 		{
 		case OUTPUT:
-			return parseOutputMsg(msg, signal);
+			return parseOutputMsg(msg, signal, cookie);
 		case MAIN:
-			return parseMainMsg(msg, signal);
+			return parseMainMsg(msg, signal, cookie);
 		case CONFIG:
-			return parseConfigMsg(msg, signal);
+			return parseConfigMsg(msg, signal, cookie);
 		}
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
@@ -47,30 +48,32 @@ public class XmmsMsgParser {
 	public static ServerMsg parseVolMsg(ByteBuffer msg)
 	{
 		msg.flip();
-		XmmsCollTypes type = XmmsCollType.getCollType(msg.getInt());
+		
+		//Type is irrelevant here...
+		msg.getInt();
 		HashMap<String, Integer> volumes = DictParser.parseDict(msg);
 		ServerVolumeMessage retMessage = new ServerVolumeMessage(SrvMsgTypes.VOLUME_MSG, volumes);
 		return retMessage;
 
 	}
 	
-	public static ServerMsg parseOutputMsg(ByteBuffer msg, IPCSignals signal)
+	public static ServerMsg parseOutputMsg(ByteBuffer msg, IPCSignals signal, int cookie)
 	{
 		//TODO replace this with something, that actually works...
 		//Check the commands that have to be used...
-		if (43 == msg.limit())
+		if (Xmms2Cookies.GETVOL_COOKIE == cookie)
 		{
 			return parseVolMsg(msg);
 		}
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
 	
-	public static ServerMsg parseConfigMsg(ByteBuffer msg, IPCSignals cmd)
+	public static ServerMsg parseConfigMsg(ByteBuffer msg, IPCSignals cmd, int cookie)
 	{
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
 	
-	public static ServerMsg parseMainMsg(ByteBuffer msg, IPCSignals cmd)
+	public static ServerMsg parseMainMsg(ByteBuffer msg, IPCSignals cmd, int cookie)
 	{
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}

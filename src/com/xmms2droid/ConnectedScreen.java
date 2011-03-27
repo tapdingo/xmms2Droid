@@ -26,7 +26,6 @@ import com.xmms2droid.xmmsMsgHandling.ServerVolumeMessage;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgParser;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgWriter;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TabHost;
@@ -40,13 +39,14 @@ public class ConnectedScreen extends TabActivity {
 	private Button m_startButton = null;
 	private Button m_pauseButton = null;
 	private Button m_incVolButton = null;
+	private Button m_decVolButton = null;
 	private XmmsMsgWriter m_msgWriter = new XmmsMsgWriter();
 	
 	private NetModule m_netModule = null;
 	
 	private int m_volume = 0;
-	private TextView m_leftVol = null;
-	private TextView m_rightVol = null;
+	private TextView m_volumeView = null;
+	private TextView m_playState = null;
 	
     /** Called when the activity is first created. */
     @Override
@@ -65,9 +65,11 @@ public class ConnectedScreen extends TabActivity {
         m_pauseButton.setOnClickListener(pauseListener);
         m_incVolButton = (Button) findViewById(R.id.incVol);
         m_incVolButton.setOnClickListener(incVolListener);
+        m_decVolButton = (Button) findViewById(R.id.decVol);
+        m_decVolButton.setOnClickListener(decVolListener);
         
-        m_leftVol = (TextView) findViewById(R.id.leftVol);
-        m_rightVol = (TextView) findViewById(R.id.rightVol);
+        m_volumeView = (TextView) findViewById(R.id.volume);
+        m_playState = (TextView) findViewById(R.id.playStatus);
         
         TabHost.TabSpec spec = getTabHost().newTabSpec("tag1");
         spec.setContent(R.id.controls);
@@ -83,6 +85,7 @@ public class ConnectedScreen extends TabActivity {
         
         new Thread(readerTask).start();
         updateVolume();
+        updatePlaybackStatus();
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
@@ -106,16 +109,23 @@ public class ConnectedScreen extends TabActivity {
 		
 		@Override
 		public void onClick(View arg0) {
-			//ByteBuffer pauseMsg = m_msgWriter.generatePauseMsg();
-			//m_netModule.send(pauseMsg);
-			updateVolume();
+			ByteBuffer pauseMsg = m_msgWriter.generatePauseMsg();
+			m_netModule.send(pauseMsg);
 		}
 	};
 	
 	private View.OnClickListener incVolListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View arg0) {
-			Log.d("CON_SCREEN", "READ COMPLETE");
+
+		}
+	};
+	
+	private View.OnClickListener decVolListener = new View.OnClickListener() {
+		@Override
+		public void onClick(View arg0) {
+			ByteBuffer decVolMsg = m_msgWriter.generateVolumeMsg(m_volume - 10);
+			m_netModule.send(decVolMsg);
 		}
 	};
 	
@@ -130,14 +140,18 @@ public class ConnectedScreen extends TabActivity {
 		}
 	}
 	
+	private void updatePlaybackStatus()
+	{
+		ByteBuffer reqStatusMsg = m_msgWriter.generateStatusReqMsg();
+		m_netModule.send(reqStatusMsg);
+	}
+	
 	private void handleVolumeMsg(ServerVolumeMessage msg)
 	{
 		HashMap<String, Integer> volumes = msg.getVolumeInformation();
 		m_volume = volumes.get("left");
 		runOnUiThread(updateVolumeDisplay);
 	}
-	
-
 	
 	private void updateVolume()
 	{
@@ -149,7 +163,7 @@ public class ConnectedScreen extends TabActivity {
 	{
 		@Override
 		public void run() {
-			m_leftVol.setText(String.valueOf(m_volume));
+			m_volumeView.setText(String.valueOf(m_volume));
 		}
 	};
 	

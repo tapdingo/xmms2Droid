@@ -30,10 +30,23 @@ public class XmmsMsgWriter {
 				playMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
 				IPCCommand.getCommandId(IPCCommands.START),
-				1,
+				Xmms2Cookies.PLAY_COOKIE,
 				0);	
 		playMsg.flip();
 		return playMsg;
+	}
+	
+	public ByteBuffer generateStatusReqMsg()
+	{
+		ByteBuffer statusReqMsg = allocateHeader();
+		writeHeader(
+				statusReqMsg, 
+				IPCObject.getObjectId(IPCObjects.OUTPUT),
+				IPCCommand.getCommandId(IPCCommands.OUTPUT_STATUS),
+				Xmms2Cookies.PLAYBACKSTATE_COOKIE, 
+				0);
+		statusReqMsg.flip();
+		return statusReqMsg;
 	}
 	
 	public ByteBuffer generateStopMsg()
@@ -43,7 +56,7 @@ public class XmmsMsgWriter {
 				stopMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
 				IPCCommand.getCommandId(IPCCommands.STOP),
-				10,
+				Xmms2Cookies.STOP_COOKIE,
 				0);	
 		stopMsg.flip();
 		return stopMsg;
@@ -56,7 +69,7 @@ public class XmmsMsgWriter {
 				pauseMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
 				IPCCommand.getCommandId(IPCCommands.PAUSE),
-				1,
+				Xmms2Cookies.PAUSE_COOKIE,
 				0);	
 		pauseMsg.flip();
 		return pauseMsg;
@@ -69,16 +82,21 @@ public class XmmsMsgWriter {
 				volReqMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
 				IPCCommand.getCommandId(IPCCommands.VOLGET),
-				127,
+				Xmms2Cookies.GETVOL_COOKIE,
 				0);	
 		
 		volReqMsg.flip();
 		return volReqMsg;
 	}
 	
+	public ByteBuffer generateVolumeMsg(int newVol)
+	{
+		ByteBuffer volReqMsg = allocateHeader();
+		return volReqMsg;
+	}
+	
 	private void writeHeader(ByteBuffer tgt, int obj, int cmd, int cookie, int payload)
 	{
-		//TODO HTON?
 		tgt.putInt(obj);
 		tgt.putInt(cmd);
 		tgt.putInt(cookie);
