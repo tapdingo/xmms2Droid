@@ -104,16 +104,8 @@ public class XmmsMsgWriter {
 				IPCCommand.getCommandId(IPCCommands.VOLSET),
 				Xmms2Cookies.SETVOL_COOKIE,
 				totalLen);
-		volReqMsg.putInt(channel.length() + 1);
-		byte[] b;
-		try {
-			b = channel.getBytes("utf-8");
-			volReqMsg.put(b);
-			volReqMsg.put((byte)0);
-			volReqMsg.putInt(newVol);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
+		putString(volReqMsg, channel);
+		volReqMsg.putInt(newVol);
 		volReqMsg.flip();
 		return volReqMsg;
 	}
@@ -129,6 +121,44 @@ public class XmmsMsgWriter {
 	private ByteBuffer allocateHeader()
 	{
 		return ByteBuffer.allocate(16);
+	}
+	
+	public ByteBuffer generateHelloMsg()
+	{
+		//This is the len without the channel string
+		final String clientName = "xmms2droid";
+		final int totalLen = clientName.length() + 1 + 4; //Don't forget the \0
+		//30 Bytes is the longest possible payload length for the RIGHT channel
+		//To come: handle all channels...
+		ByteBuffer helloMsg = ByteBuffer.allocate(100);
+		
+		writeHeader(helloMsg,
+				IPCObject.getObjectId(IPCObjects.MAIN),
+				IPCCommand.getCommandId(IPCCommands.CURRENTID),
+				Xmms2Cookies.SETVOL_COOKIE,
+				totalLen);
+		
+		//Version number
+		//\TODO get the correct version number
+		helloMsg.putInt(1);
+		putString(helloMsg, clientName);
+
+		helloMsg.flip();
+		return helloMsg;
+	}
+	
+	private void putString(ByteBuffer buf, String msg)
+	{
+		final int len = msg.length() + 1;
+		buf.putInt(len);
+		byte[] bytes = null;
+		try {
+			bytes = msg.getBytes("utf-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		buf.put(bytes);
+		buf.put((byte)0);
 	}
 
 }

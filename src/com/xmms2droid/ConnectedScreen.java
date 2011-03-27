@@ -90,8 +90,10 @@ public class ConnectedScreen extends TabActivity {
         getTabHost().setCurrentTab(0);
         
         new Thread(readerTask).start();
+        //sayHello();
         updateVolume();
         updatePlaybackStatus();
+        updatePlayingTrack();
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
@@ -187,6 +189,12 @@ public class ConnectedScreen extends TabActivity {
 		}
 	}
 	
+	private void sayHello()
+	{
+		ByteBuffer helloMsg = m_msgWriter.generateHelloMsg();
+		m_app.netModule.send(helloMsg);
+	}
+	
 	private void updatePlaybackStatus()
 	{
 		ByteBuffer reqStatusMsg = m_msgWriter.generateStatusReqMsg();
@@ -210,6 +218,11 @@ public class ConnectedScreen extends TabActivity {
 	{
 		ByteBuffer volReqMsg = m_msgWriter.generateVolReqMsg();
 		m_app.netModule.send(volReqMsg);
+	}
+	
+	private void updatePlayingTrack()
+	{
+		
 	}
 	
 	private Runnable updateVolumeDisplay = new Runnable()
