@@ -44,6 +44,8 @@ public class ConnectedScreen extends TabActivity {
 	private XmmsMsgWriter m_msgWriter = new XmmsMsgWriter();
 	
 	private NetModule m_netModule = null;
+	private boolean m_muted = false;
+	private Button m_muteButton = null;
 	
 	private int m_volume = 0;
 	private String m_playState = "UNKNOWN";
@@ -69,6 +71,8 @@ public class ConnectedScreen extends TabActivity {
         m_incVolButton.setOnClickListener(incVolListener);
         m_decVolButton = (Button) findViewById(R.id.decVol);
         m_decVolButton.setOnClickListener(decVolListener);
+        m_muteButton = (Button) findViewById(R.id.mute);
+        m_muteButton.setOnClickListener(muteListener);
         
         m_volumeView = (TextView) findViewById(R.id.volume);
         m_playStateView = (TextView) findViewById(R.id.playStatus);
@@ -122,15 +126,51 @@ public class ConnectedScreen extends TabActivity {
 	private View.OnClickListener incVolListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View arg0) {
-
+			m_muted = false;
+			ByteBuffer incVolMsgLeft = m_msgWriter.generateVolumeMsg(m_volume + 10, "left");
+			m_netModule.send(incVolMsgLeft);
+			ByteBuffer incVolMsgRight = m_msgWriter.generateVolumeMsg(m_volume + 10, "right");
+			m_netModule.send(incVolMsgRight);
+			updateVolume();
+			m_muteButton.setText("Mute");
 		}
 	};
 	
 	private View.OnClickListener decVolListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View arg0) {
-			ByteBuffer decVolMsg = m_msgWriter.generateVolumeMsg(m_volume - 10);
-			m_netModule.send(decVolMsg);
+			m_muted = false;
+			ByteBuffer decVolMsgLeft = m_msgWriter.generateVolumeMsg(m_volume - 10, "left");
+			m_netModule.send(decVolMsgLeft);
+			ByteBuffer decVolMsgRight= m_msgWriter.generateVolumeMsg(m_volume - 10, "right");
+			m_netModule.send(decVolMsgRight);
+			updateVolume();
+			m_muteButton.setText("Mute");
+		}
+	};
+	
+	private View.OnClickListener muteListener = new View.OnClickListener() {
+		@Override
+		public void onClick(View arg0) {
+			
+			int newVol = 0;
+			
+			if (m_muted)
+			{
+				newVol = m_volume;
+				m_muted = false;
+				m_muteButton.setText("Mute");
+			}
+			else
+			{
+				newVol = 0;
+				m_muted = true;
+				m_muteButton.setText("Unmute");
+			}
+			ByteBuffer decVolMsgLeft = m_msgWriter.generateVolumeMsg(newVol, "left");
+			m_netModule.send(decVolMsgLeft);
+			ByteBuffer decVolMsgRight= m_msgWriter.generateVolumeMsg(newVol, "right");
+			m_netModule.send(decVolMsgRight);
 		}
 	};
 	

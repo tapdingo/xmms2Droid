@@ -18,6 +18,7 @@
 
 package com.xmms2droid.xmmsMsgHandling;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 
@@ -89,9 +90,31 @@ public class XmmsMsgWriter {
 		return volReqMsg;
 	}
 	
-	public ByteBuffer generateVolumeMsg(int newVol)
+	public ByteBuffer generateVolumeMsg(int newVol, String channel)
 	{
-		ByteBuffer volReqMsg = allocateHeader();
+		//This is the len without the channel string
+		final int lenRaw = 8;
+		final int totalLen = channel.length() + 1 + lenRaw; //Don't forget the \0
+		//30 Bytes is the longest possible payload length for the RIGHT channel
+		//To come: handle all channels...
+		ByteBuffer volReqMsg = ByteBuffer.allocate(30);
+		
+		writeHeader(volReqMsg,
+				IPCObject.getObjectId(IPCObjects.OUTPUT),
+				IPCCommand.getCommandId(IPCCommands.VOLSET),
+				Xmms2Cookies.SETVOL_COOKIE,
+				totalLen);
+		volReqMsg.putInt(channel.length() + 1);
+		byte[] b;
+		try {
+			b = channel.getBytes("utf-8");
+			volReqMsg.put(b);
+			volReqMsg.put((byte)0);
+			volReqMsg.putInt(newVol);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		volReqMsg.flip();
 		return volReqMsg;
 	}
 	
