@@ -43,7 +43,7 @@ public class XmmsMsgWriter {
 				stopMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
 				IPCCommand.getCommandId(IPCCommands.STOP),
-				1,
+				10,
 				0);	
 		stopMsg.flip();
 		return stopMsg;
@@ -69,7 +69,7 @@ public class XmmsMsgWriter {
 				volReqMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
 				IPCCommand.getCommandId(IPCCommands.VOLGET),
-				1,
+				127,
 				0);	
 		
 		volReqMsg.flip();

@@ -24,7 +24,7 @@ import java.util.HashMap;
 
 public class XmmsMsgParser {
 	
-	public static void parseMsg(ByteBuffer header, ByteBuffer msg)
+	public static ServerMsg parseMsg(ByteBuffer header, ByteBuffer msg)
 	{
 		int headerObject = XmmsHeaderParser.getObject(header);
 		int headerSignal= XmmsHeaderParser.getCommand(header);
@@ -35,46 +35,44 @@ public class XmmsMsgParser {
 		switch(object)
 		{
 		case OUTPUT:
-			parseOutputMsg(msg, signal);
-			break;
+			return parseOutputMsg(msg, signal);
 		case MAIN:
-			parseMainMsg(msg, signal);
-			break;
+			return parseMainMsg(msg, signal);
 		case CONFIG:
-			parseConfigMsg(msg, signal);
-			break;
+			return parseConfigMsg(msg, signal);
 		}
+		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
 	
-	public static void parseVolMsg(ByteBuffer msg)
+	public static ServerMsg parseVolMsg(ByteBuffer msg)
 	{
 		msg.flip();
 		XmmsCollTypes type = XmmsCollType.getCollType(msg.getInt());
-		if (XmmsCollTypes.XMMSV_TYPE_DICT == XmmsCollType.getCollType(msg.getInt()))
-		{
-			HashMap<String, Integer> volumes = DictParser.parseDict(msg);
-			int leftVolume = volumes.get("left");
-			int rightVolume = volumes.get("right");
-		}
+		HashMap<String, Integer> volumes = DictParser.parseDict(msg);
+		ServerVolumeMessage retMessage = new ServerVolumeMessage(SrvMsgTypes.VOLUME_MSG, volumes);
+		return retMessage;
+
 	}
 	
-	public static void parseOutputMsg(ByteBuffer msg, IPCSignals signal)
+	public static ServerMsg parseOutputMsg(ByteBuffer msg, IPCSignals signal)
 	{
 		//TODO replace this with something, that actually works...
 		//Check the commands that have to be used...
 		if (43 == msg.limit())
 		{
-			parseVolMsg(msg);
+			return parseVolMsg(msg);
 		}
-		
+		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
 	
-	public static void parseConfigMsg(ByteBuffer msg, IPCSignals cmd)
+	public static ServerMsg parseConfigMsg(ByteBuffer msg, IPCSignals cmd)
 	{
+		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
 	
-	public static void parseMainMsg(ByteBuffer msg, IPCSignals cmd)
+	public static ServerMsg parseMainMsg(ByteBuffer msg, IPCSignals cmd)
 	{
+		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
 
 }

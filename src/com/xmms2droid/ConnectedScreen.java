@@ -21,6 +21,8 @@ package com.xmms2droid;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
+import com.xmms2droid.xmmsMsgHandling.ServerMsg;
+import com.xmms2droid.xmmsMsgHandling.ServerVolumeMessage;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgParser;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgWriter;
 import android.os.Bundle;
@@ -42,6 +44,7 @@ public class ConnectedScreen extends TabActivity {
 	
 	private NetModule m_netModule = null;
 	
+	private int m_volume = 0;
 	private TextView m_leftVol = null;
 	private TextView m_rightVol = null;
 	
@@ -116,11 +119,39 @@ public class ConnectedScreen extends TabActivity {
 		}
 	};
 	
+	private void handleMessage(ServerMsg msg)
+	{
+		switch (msg.getMsgType())
+		{
+		case VOLUME_MSG:
+			handleVolumeMsg((ServerVolumeMessage) msg);
+			break;
+		
+		}
+	}
+	
+	private void handleVolumeMsg(ServerVolumeMessage msg)
+	{
+		HashMap<String, Integer> volumes = msg.getVolumeInformation();
+		m_volume = volumes.get("left");
+		runOnUiThread(updateVolumeDisplay);
+	}
+	
+
+	
 	private void updateVolume()
 	{
 		ByteBuffer volReqMsg = m_msgWriter.generateVolReqMsg();
 		m_app.netModule.send(volReqMsg);
 	}
+	
+	private Runnable updateVolumeDisplay = new Runnable()
+	{
+		@Override
+		public void run() {
+			m_leftVol.setText(String.valueOf(m_volume));
+		}
+	};
 	
 	private Runnable readerTask = new Runnable() {
 		
@@ -135,7 +166,8 @@ public class ConnectedScreen extends TabActivity {
 				{
 					ByteBuffer recHeader = m_readHandler.getHeader();
 					ByteBuffer recMsg = m_readHandler.getMsg();
-					XmmsMsgParser.parseMsg(recHeader, recMsg);
+					ServerMsg parsed = XmmsMsgParser.parseMsg(recHeader, recMsg);
+					handleMessage(parsed);
 					m_readHandler.clear();
 				}
 			}
