@@ -90,7 +90,7 @@ public class ConnectedScreen extends TabActivity {
         getTabHost().setCurrentTab(0);
         
         new Thread(readerTask).start();
-        //sayHello();
+        sayHello();
         updateVolume();
         updatePlaybackStatus();
         updatePlayingTrack();

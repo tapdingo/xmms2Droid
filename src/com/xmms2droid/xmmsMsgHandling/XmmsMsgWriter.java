@@ -126,21 +126,21 @@ public class XmmsMsgWriter {
 	public ByteBuffer generateHelloMsg()
 	{
 		//This is the len without the channel string
-		final String clientName = "xmms2droid";
-		final int totalLen = clientName.length() + 1 + 4; //Don't forget the \0
+		final String clientName = "xmmsdroid";
+		final int totalLen = clientName.length() + 1 + 8; //Don't forget the \0
 		//30 Bytes is the longest possible payload length for the RIGHT channel
 		//To come: handle all channels...
-		ByteBuffer helloMsg = ByteBuffer.allocate(100);
+		ByteBuffer helloMsg = ByteBuffer.allocate(35);
 		
 		writeHeader(helloMsg,
-				IPCObject.getObjectId(IPCObjects.MAIN),
-				IPCCommand.getCommandId(IPCCommands.CURRENTID),
-				Xmms2Cookies.SETVOL_COOKIE,
+				0,
+				0,
+				200,
 				totalLen);
 		
 		//Version number
 		//\TODO get the correct version number
-		helloMsg.putInt(1);
+		helloMsg.putInt(11);
 		putString(helloMsg, clientName);
 
 		helloMsg.flip();
