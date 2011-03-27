@@ -22,7 +22,8 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 import com.xmms2droid.xmmsMsgHandling.ServerMsg;
-import com.xmms2droid.xmmsMsgHandling.ServerVolumeMessage;
+import com.xmms2droid.xmmsMsgHandling.ServerStateMsg;
+import com.xmms2droid.xmmsMsgHandling.ServerVolumeMsg;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgParser;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgWriter;
 import android.os.Bundle;
@@ -45,8 +46,9 @@ public class ConnectedScreen extends TabActivity {
 	private NetModule m_netModule = null;
 	
 	private int m_volume = 0;
+	private String m_playState = "UNKNOWN";
 	private TextView m_volumeView = null;
-	private TextView m_playState = null;
+	private TextView m_playStateView = null;
 	
     /** Called when the activity is first created. */
     @Override
@@ -69,7 +71,7 @@ public class ConnectedScreen extends TabActivity {
         m_decVolButton.setOnClickListener(decVolListener);
         
         m_volumeView = (TextView) findViewById(R.id.volume);
-        m_playState = (TextView) findViewById(R.id.playStatus);
+        m_playStateView = (TextView) findViewById(R.id.playStatus);
         
         TabHost.TabSpec spec = getTabHost().newTabSpec("tag1");
         spec.setContent(R.id.controls);
@@ -93,6 +95,7 @@ public class ConnectedScreen extends TabActivity {
 		public void onClick(View arg0) {
 			ByteBuffer startMsg = m_msgWriter.generatePlayMsg();
 			m_netModule.send(startMsg);
+			updatePlaybackStatus();
 			
 		}
 	};
@@ -102,6 +105,7 @@ public class ConnectedScreen extends TabActivity {
 		public void onClick(View arg0) {
 			ByteBuffer stopMsg = m_msgWriter.generateStopMsg();
 			m_netModule.send(stopMsg);
+			updatePlaybackStatus();
 		}
 	};
 	
@@ -111,6 +115,7 @@ public class ConnectedScreen extends TabActivity {
 		public void onClick(View arg0) {
 			ByteBuffer pauseMsg = m_msgWriter.generatePauseMsg();
 			m_netModule.send(pauseMsg);
+			updatePlaybackStatus();
 		}
 	};
 	
@@ -134,9 +139,11 @@ public class ConnectedScreen extends TabActivity {
 		switch (msg.getMsgType())
 		{
 		case VOLUME_MSG:
-			handleVolumeMsg((ServerVolumeMessage) msg);
+			handleVolumeMsg((ServerVolumeMsg) msg);
 			break;
-		
+		case PLAYBACKSTATE_MSG:
+			handlePlaybackStateMsg((ServerStateMsg) msg);
+			break;
 		}
 	}
 	
@@ -146,11 +153,17 @@ public class ConnectedScreen extends TabActivity {
 		m_netModule.send(reqStatusMsg);
 	}
 	
-	private void handleVolumeMsg(ServerVolumeMessage msg)
+	private void handleVolumeMsg(ServerVolumeMsg msg)
 	{
 		HashMap<String, Integer> volumes = msg.getVolumeInformation();
 		m_volume = volumes.get("left");
 		runOnUiThread(updateVolumeDisplay);
+	}
+	
+	private void handlePlaybackStateMsg(ServerStateMsg msg)
+	{
+		m_playState = msg.getState();
+		runOnUiThread(updatePlaybackStateDisplay);
 	}
 	
 	private void updateVolume()
@@ -165,6 +178,16 @@ public class ConnectedScreen extends TabActivity {
 		public void run() {
 			m_volumeView.setText(String.valueOf(m_volume));
 		}
+	};
+	
+	private Runnable updatePlaybackStateDisplay = new Runnable()
+	{
+
+		@Override
+		public void run() {
+			m_playStateView.setText(m_playState);
+		}
+		
 	};
 	
 	private Runnable readerTask = new Runnable() {

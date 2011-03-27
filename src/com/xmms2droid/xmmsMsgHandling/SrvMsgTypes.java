@@ -1,6 +1,7 @@
 package com.xmms2droid.xmmsMsgHandling;
 
 public enum SrvMsgTypes {
-	VOLUME_MSG, 
+	VOLUME_MSG,
+	PLAYBACKSTATE_MSG,
 	UNKNOWN
 }

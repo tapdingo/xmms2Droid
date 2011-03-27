@@ -45,25 +45,37 @@ public class XmmsMsgParser {
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
 	
-	public static ServerMsg parseVolMsg(ByteBuffer msg)
+	private static ServerMsg parseVolMsg(ByteBuffer msg)
 	{
 		msg.flip();
 		
 		//Type is irrelevant here...
 		msg.getInt();
 		HashMap<String, Integer> volumes = DictParser.parseDict(msg);
-		ServerVolumeMessage retMessage = new ServerVolumeMessage(SrvMsgTypes.VOLUME_MSG, volumes);
-		return retMessage;
-
+		return new ServerVolumeMsg(SrvMsgTypes.VOLUME_MSG, volumes);
 	}
+	
+	private static ServerMsg parsePlayStateMsg(ByteBuffer msg)
+	{
+		msg.flip();
+		
+		//Len is irrelevant here...
+		msg.getInt();
+		int playState = msg.getInt();
+		return new ServerStateMsg(SrvMsgTypes.PLAYBACKSTATE_MSG, playState);
+	}
+	
 	
 	public static ServerMsg parseOutputMsg(ByteBuffer msg, IPCSignals signal, int cookie)
 	{
 		//TODO replace this with something, that actually works...
 		//Check the commands that have to be used...
-		if (Xmms2Cookies.GETVOL_COOKIE == cookie)
+		switch (cookie)
 		{
+		case Xmms2Cookies.GETVOL_COOKIE:
 			return parseVolMsg(msg);
+		case Xmms2Cookies.PLAYBACKSTATE_COOKIE:
+			return parsePlayStateMsg(msg);
 		}
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
