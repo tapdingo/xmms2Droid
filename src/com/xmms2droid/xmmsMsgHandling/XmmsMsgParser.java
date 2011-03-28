@@ -41,6 +41,8 @@ public class XmmsMsgParser {
 			return parseMainMsg(msg, signal, cookie);
 		case CONFIG:
 			return parseConfigMsg(msg, signal, cookie);
+		case MEDIALIB:
+			return parseMediaLibMsg(msg, signal, cookie);
 		}
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
@@ -76,18 +78,49 @@ public class XmmsMsgParser {
 			return parseVolMsg(msg);
 		case Xmms2Cookies.PLAYBACKSTATE_COOKIE:
 			return parsePlayStateMsg(msg);
+		case Xmms2Cookies.TRACKREQ_COOKIE:
+			return parseTrackIdMsg(msg);
 		}
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
 	
-	public static ServerMsg parseConfigMsg(ByteBuffer msg, IPCSignals cmd, int cookie)
+	private static ServerMsg parseMediaLibMsg(ByteBuffer msg, IPCSignals cmd, int cookie)
+	{
+		switch(cookie)
+		{
+		case Xmms2Cookies.TRACKINFOREQ_COOKIE:
+			return parseTrackInfoMsg(msg);
+		}
+		return new ServerMsg(SrvMsgTypes.UNKNOWN);
+	}
+	
+	private static ServerMsg parseConfigMsg(ByteBuffer msg, IPCSignals cmd, int cookie)
 	{
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
 	
-	public static ServerMsg parseMainMsg(ByteBuffer msg, IPCSignals cmd, int cookie)
+	private static ServerMsg parseMainMsg(ByteBuffer msg, IPCSignals cmd, int cookie)
 	{
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
+	}
+	
+	private static ServerMsg parseTrackIdMsg(ByteBuffer msg)
+	{
+		msg.flip();
+		//Type is irrelevant here
+		msg.getInt();
+		return new ServerTrackIdMsg(SrvMsgTypes.TRACKID_MSG, msg.getInt());
+	}
+	
+	private static ServerTrackInfoMsg parseTrackInfoMsg(ByteBuffer msg)
+	{
+		msg.flip();
+		//Type is irrelevant here
+		msg.getInt();
+		//This msg type seems to be a little bit more complicated...
+		HashMap<String, HashMap<String, Object>> trackInfo = DictParser.parseTrackInfo(msg);
+		
+		return new ServerTrackInfoMsg(SrvMsgTypes.TRACKINFO_MSG, trackInfo);
 	}
 
 }

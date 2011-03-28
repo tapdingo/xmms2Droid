@@ -23,6 +23,8 @@ import java.util.HashMap;
 
 import com.xmms2droid.xmmsMsgHandling.ServerMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerStateMsg;
+import com.xmms2droid.xmmsMsgHandling.ServerTrackIdMsg;
+import com.xmms2droid.xmmsMsgHandling.ServerTrackInfoMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerVolumeMsg;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgParser;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgWriter;
@@ -51,6 +53,10 @@ public class ConnectedScreen extends TabActivity {
 	private String m_playState = "UNKNOWN";
 	private TextView m_volumeView = null;
 	private TextView m_playStateView = null;
+	private String m_curSong = "UNKNOWN";
+	private String m_curArtist = "UNKNWON";
+	private TextView m_artistView = null;
+	private TextView m_titleView = null;
 	
     /** Called when the activity is first created. */
     @Override
@@ -76,6 +82,8 @@ public class ConnectedScreen extends TabActivity {
         
         m_volumeView = (TextView) findViewById(R.id.volume);
         m_playStateView = (TextView) findViewById(R.id.playStatus);
+        m_artistView = (TextView) findViewById(R.id.artist);
+        m_titleView = (TextView) findViewById(R.id.track);
         
         TabHost.TabSpec spec = getTabHost().newTabSpec("tag1");
         spec.setContent(R.id.controls);
@@ -90,10 +98,10 @@ public class ConnectedScreen extends TabActivity {
         getTabHost().setCurrentTab(0);
         
         new Thread(readerTask).start();
-        sayHello();
-        updateVolume();
-        updatePlaybackStatus();
-        updatePlayingTrack();
+       sayHello();
+       updateVolume();
+       updatePlaybackStatus();
+       updatePlayingTrack();
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
@@ -186,6 +194,12 @@ public class ConnectedScreen extends TabActivity {
 		case PLAYBACKSTATE_MSG:
 			handlePlaybackStateMsg((ServerStateMsg) msg);
 			break;
+		case TRACKID_MSG:
+			handleTrackIdMsg((ServerTrackIdMsg) msg);
+			break;
+		case TRACKINFO_MSG:
+			handleTrackInfoMsg((ServerTrackInfoMsg) msg);
+			break;
 		}
 	}
 	
@@ -193,6 +207,12 @@ public class ConnectedScreen extends TabActivity {
 	{
 		ByteBuffer helloMsg = m_msgWriter.generateHelloMsg();
 		m_app.netModule.send(helloMsg);
+	}
+	
+	private void requestTrackInfo(int id)
+	{
+		ByteBuffer trackInfoMsg = m_msgWriter.generateTrackInfoReqMsg(id);
+		m_netModule.send(trackInfoMsg);
 	}
 	
 	private void updatePlaybackStatus()
@@ -206,6 +226,18 @@ public class ConnectedScreen extends TabActivity {
 		HashMap<String, Integer> volumes = msg.getVolumeInformation();
 		m_volume = volumes.get("left");
 		runOnUiThread(updateVolumeDisplay);
+	}
+	
+	private void handleTrackInfoMsg(ServerTrackInfoMsg msg)
+	{
+		m_curArtist = (String) msg.getTrackInfo().get("plugin/id3v2").get("artist");
+		m_curSong = (String) msg.getTrackInfo().get("plugin/id3v2").get("title");
+		runOnUiThread(updateTrackDisplay);
+	}
+	
+	private void handleTrackIdMsg(ServerTrackIdMsg msg)
+	{
+		requestTrackInfo(msg.getId());
 	}
 	
 	private void handlePlaybackStateMsg(ServerStateMsg msg)
@@ -222,7 +254,8 @@ public class ConnectedScreen extends TabActivity {
 	
 	private void updatePlayingTrack()
 	{
-		
+		ByteBuffer trackReqMsg = m_msgWriter.generateTrackReqMsg();
+		m_app.netModule.send(trackReqMsg);
 	}
 	
 	private Runnable updateVolumeDisplay = new Runnable()
@@ -240,7 +273,16 @@ public class ConnectedScreen extends TabActivity {
 		public void run() {
 			m_playStateView.setText(m_playState);
 		}
-		
+	};
+	
+	private Runnable updateTrackDisplay = new Runnable()
+	{
+
+		@Override
+		public void run() {
+			m_artistView.setText(m_curArtist);
+			m_titleView.setText(m_curSong);
+		}
 	};
 	
 	private Runnable readerTask = new Runnable() {

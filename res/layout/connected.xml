@@ -47,6 +47,14 @@ android:id="@android:id/tabhost"
 	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Volume:"/>
 	    					<TextView android:id="@+id/volume" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UNKNOWN" />
     					</TableRow>
+    					<TableRow>
+	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Artist:"/>
+	    					<TextView android:id="@+id/artist" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UNKNOWN" />
+    					</TableRow>
+    					<TableRow>
+	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Title:"/>
+	    					<TextView android:id="@+id/track" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UNKNOWN" />
+    					</TableRow>
     				</TableLayout>
 				</LinearLayout>
 				<ListView

@@ -44,6 +44,50 @@ public class DictParser {
 		return volumes;
 	}
 	
+	public static HashMap<String, HashMap<String, Object>> parseTrackInfo(ByteBuffer buf)
+	{
+		int len = buf.getInt();
+		//Weird structure here... 2 Keys than a value...
+		HashMap<String, HashMap<String, Object>> vals = new HashMap<String, HashMap<String, Object>>();
+		
+		//We get three values - 2 Keys 1 Value - in every pass, so i+= 3
+		for (int i = 0; i < len; i+= 3)
+		{
+			//FirstType is ALWAYS a String *cough*
+			buf.getInt();
+			String outerKey = getString(buf);
+			//SecondType is ALWAYS a String *cough*
+			buf.getInt();
+			String innerKey = getString(buf);
+			
+			int valType = buf.getInt();
+			
+			switch(valType)
+			{
+			case 3:
+				String strVal = getString(buf);
+				addValueToMap(vals, innerKey, outerKey, strVal);
+				break;
+			case 2:
+				int intVal = buf.getInt();
+				addValueToMap(vals, innerKey, outerKey, intVal);
+				break;
+			}
+		}
+		return vals;
+	}
+	
+	private static void addValueToMap(HashMap<String, HashMap<String, Object>> valMap,String innerKey, String outerKey, Object val)
+	{
+		if (!valMap.containsKey(outerKey))
+		{
+			HashMap<String, Object> innerMap = new HashMap<String, Object>();
+			valMap.put(outerKey, innerMap);
+		}
+		HashMap<String, Object> innerMap = valMap.get(outerKey);
+		innerMap.put(innerKey, val);
+	}
+	
 	private static String getString(ByteBuffer buf)
 	{
 		String recString = "";

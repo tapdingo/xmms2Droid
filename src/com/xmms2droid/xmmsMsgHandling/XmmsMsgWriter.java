@@ -133,9 +133,9 @@ public class XmmsMsgWriter {
 		ByteBuffer helloMsg = ByteBuffer.allocate(35);
 		
 		writeHeader(helloMsg,
+				IPCObject.getObjectId(IPCObjects.MAIN),
 				0,
-				0,
-				200,
+				Xmms2Cookies.HELLO_COOKIE,
 				totalLen);
 		
 		//Version number
@@ -159,6 +159,33 @@ public class XmmsMsgWriter {
 		}
 		buf.put(bytes);
 		buf.put((byte)0);
+	}
+	
+	public ByteBuffer generateTrackReqMsg()
+	{
+		ByteBuffer trackReqMsg = allocateHeader();
+		writeHeader(
+				trackReqMsg,
+				IPCObject.getObjectId(IPCObjects.OUTPUT),
+				39,
+				Xmms2Cookies.TRACKREQ_COOKIE,
+				0);	
+		trackReqMsg.flip();
+		return trackReqMsg;
+	}
+	
+	public ByteBuffer generateTrackInfoReqMsg(int id)
+	{
+		ByteBuffer trackInfoReq = ByteBuffer.allocate(20);
+		writeHeader(
+				trackInfoReq,
+				IPCObject.getObjectId(IPCObjects.MEDIALIB),
+				IPCCommand.getCommandId(IPCCommands.INFO),
+				Xmms2Cookies.TRACKINFOREQ_COOKIE,
+				4);
+		trackInfoReq.putInt(id);
+		trackInfoReq.flip();
+		return trackInfoReq;
 	}
 
 }

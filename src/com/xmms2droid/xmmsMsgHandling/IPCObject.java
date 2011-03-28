@@ -24,7 +24,8 @@ enum IPCObjects {
 	MAIN, 
 	PLAYLIST, 
 	CONFIG,
-	OUTPUT, 
+	OUTPUT,
+	MEDIALIB,
 	UNKNOWN
 }
 

@@ -34,6 +34,7 @@ enum IPCCommands {
 	CURRENTID,
 	VOLSET,
 	VOLGET,
+	INFO,
 	UNKNOWN
 }
 
