@@ -112,8 +112,13 @@ public class XmmsMsgParser {
 		return new ServerTrackIdMsg(SrvMsgTypes.TRACKID_MSG, msg.getInt());
 	}
 	
-	private static ServerTrackInfoMsg parseTrackInfoMsg(ByteBuffer msg)
+	private static ServerMsg parseTrackInfoMsg(ByteBuffer msg)
 	{
+		//21 Is the size of the Track Unknown Error msg...
+		if (msg.capacity() == 21)
+		{
+			return new ServerMsg(SrvMsgTypes.UNKNOWN);
+		}
 		msg.flip();
 		//Type is irrelevant here
 		msg.getInt();
