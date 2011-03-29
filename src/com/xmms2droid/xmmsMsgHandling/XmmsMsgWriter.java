@@ -188,4 +188,33 @@ public class XmmsMsgWriter {
 		return trackInfoReq;
 	}
 
+	public ByteBuffer generateListChangeMsg(int i) 
+	{
+		ByteBuffer listChangeReq = ByteBuffer.allocate(20);
+		writeHeader(
+				listChangeReq,
+				IPCObject.getObjectId(IPCObjects.PLAYLIST),
+				8,
+				Xmms2Cookies.LISTCHANGE_REL_COOKIE,
+				4);
+		listChangeReq.putInt(i);
+		listChangeReq.flip();
+		return listChangeReq;
+	}
+
+	public ByteBuffer generateTickleMsg()
+	{
+		ByteBuffer tickleMsg = allocateHeader();
+		writeHeader(
+				tickleMsg,
+				IPCObject.getObjectId(IPCObjects.OUTPUT),
+				IPCCommand.getCommandId(IPCCommands.DECODER_KILL),
+				250,
+				0);	
+		tickleMsg.flip();
+		return tickleMsg;
+	}
+	
+	
+
 }

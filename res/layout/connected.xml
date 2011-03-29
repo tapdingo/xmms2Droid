@@ -43,6 +43,12 @@ android:id="@android:id/tabhost"
 		    				<Button android:layout_width="wrap_content" android:text="DecVol" android:layout_height="wrap_content" android:id="@+id/decVol"></Button>
 		    				<Button android:layout_width="wrap_content" android:text="Mute" android:layout_height="wrap_content" android:id="@+id/mute"></Button>
     					</TableRow>
+    					<TableRow 
+	  					android:layout_width="fill_parent"
+	  					android:layout_height="wrap_content">		
+		    				<Button android:layout_width="wrap_content" android:text="Prev" android:layout_height="wrap_content" android:id="@+id/prev"></Button>
+		    				<Button android:layout_width="wrap_content" android:text="Next" android:layout_height="wrap_content" android:id="@+id/next"></Button>
+    					</TableRow>
     					<TableRow>
 	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Volume:"/>
 	    					<TextView android:id="@+id/volume" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UNKNOWN" />

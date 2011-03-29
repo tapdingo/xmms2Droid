@@ -43,6 +43,8 @@ public class ConnectedScreen extends TabActivity {
 	private Button m_pauseButton = null;
 	private Button m_incVolButton = null;
 	private Button m_decVolButton = null;
+	private Button m_nextButton = null;
+	private Button m_prevButton = null;
 	private XmmsMsgWriter m_msgWriter = new XmmsMsgWriter();
 	
 	private NetModule m_netModule = null;
@@ -79,6 +81,10 @@ public class ConnectedScreen extends TabActivity {
         m_decVolButton.setOnClickListener(decVolListener);
         m_muteButton = (Button) findViewById(R.id.mute);
         m_muteButton.setOnClickListener(muteListener);
+        m_nextButton = (Button) findViewById(R.id.next);
+        m_nextButton.setOnClickListener(nextListener);
+        m_prevButton = (Button) findViewById(R.id.prev);
+        m_prevButton.setOnClickListener(prevListener);
         
         m_volumeView = (TextView) findViewById(R.id.volume);
         m_playStateView = (TextView) findViewById(R.id.playStatus);
@@ -111,6 +117,28 @@ public class ConnectedScreen extends TabActivity {
 			m_netModule.send(startMsg);
 			updatePlaybackStatus();
 			
+		}
+	};
+	
+	private View.OnClickListener nextListener = new View.OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			ByteBuffer nextMsg = m_msgWriter.generateListChangeMsg(1);
+			m_netModule.send(nextMsg);
+			ByteBuffer tickleMsg = m_msgWriter.generateTickleMsg();
+			m_netModule.send(tickleMsg);
+		}
+	};
+	
+	private View.OnClickListener prevListener = new View.OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			ByteBuffer nextMsg = m_msgWriter.generateListChangeMsg(-1);
+			m_netModule.send(nextMsg);
+			ByteBuffer tickleMsg = m_msgWriter.generateTickleMsg();
+			m_netModule.send(tickleMsg);
 		}
 	};
     

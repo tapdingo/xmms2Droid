@@ -12,4 +12,5 @@ public class Xmms2Cookies {
 	public static final int TRACKREQ_COOKIE = 7;
 	public static final int HELLO_COOKIE = 8;
 	public static final int TRACKINFOREQ_COOKIE = 9;
+	public static final int LISTCHANGE_REL_COOKIE = 10;
 }
