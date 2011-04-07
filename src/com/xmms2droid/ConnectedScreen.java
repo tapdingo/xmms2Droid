@@ -21,6 +21,7 @@ package com.xmms2droid;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
+import com.xmms2droid.xmmsMsgHandling.IPCCommandWrapper;
 import com.xmms2droid.xmmsMsgHandling.ServerMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerStateMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerTrackIdMsg;
@@ -75,7 +76,9 @@ public class ConnectedScreen extends TabActivity {
         m_startButton.setOnClickListener(startListener);
         m_pauseButton = (Button) findViewById(R.id.pauseButton);
         m_pauseButton.setOnClickListener(pauseListener);
-        m_incVolButton = (Button) findViewById(R.id.incVol);
+        
+      //\TODO UPDATE ME
+       /* m_incVolButton = (Button) findViewById(R.id.incVol);
         m_incVolButton.setOnClickListener(incVolListener);
         m_decVolButton = (Button) findViewById(R.id.decVol);
         m_decVolButton.setOnClickListener(decVolListener);
@@ -85,6 +88,7 @@ public class ConnectedScreen extends TabActivity {
         m_nextButton.setOnClickListener(nextListener);
         m_prevButton = (Button) findViewById(R.id.prev);
         m_prevButton.setOnClickListener(prevListener);
+        */
         
         m_volumeView = (TextView) findViewById(R.id.volume);
         m_playStateView = (TextView) findViewById(R.id.playStatus);
@@ -104,10 +108,11 @@ public class ConnectedScreen extends TabActivity {
         getTabHost().setCurrentTab(0);
         
         new Thread(readerTask).start();
-       sayHello();
-       updateVolume();
-       updatePlaybackStatus();
-       updatePlayingTrack();
+       //sayHello();
+       //updateVolume();
+       //updatePlaybackStatus();
+       //updatePlayingTrack();
+       //registerPlayBackUpdate();
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
@@ -115,7 +120,8 @@ public class ConnectedScreen extends TabActivity {
 		public void onClick(View arg0) {
 			ByteBuffer startMsg = m_msgWriter.generatePlayMsg();
 			m_netModule.send(startMsg);
-			updatePlaybackStatus();
+			//\TODO FIXME
+			//updatePlaybackStatus();
 			
 		}
 	};
@@ -147,7 +153,8 @@ public class ConnectedScreen extends TabActivity {
 		public void onClick(View arg0) {
 			ByteBuffer stopMsg = m_msgWriter.generateStopMsg();
 			m_netModule.send(stopMsg);
-			updatePlaybackStatus();
+			//\TODO FIXME
+			//updatePlaybackStatus();
 		}
 	};
 	
@@ -157,7 +164,9 @@ public class ConnectedScreen extends TabActivity {
 		public void onClick(View arg0) {
 			ByteBuffer pauseMsg = m_msgWriter.generatePauseMsg();
 			m_netModule.send(pauseMsg);
-			updatePlaybackStatus();
+			
+			//\TODO FIXME
+			//updatePlaybackStatus();
 		}
 	};
 	
@@ -235,6 +244,12 @@ public class ConnectedScreen extends TabActivity {
 	{
 		ByteBuffer helloMsg = m_msgWriter.generateHelloMsg();
 		m_app.netModule.send(helloMsg);
+	}
+	
+	private void registerPlayBackUpdate()
+	{
+		ByteBuffer reqPlayUpdateMsg = m_msgWriter.generateReqPlaybackUpdateMsg();
+		m_app.netModule.send(reqPlayUpdateMsg);
 	}
 	
 	private void requestTrackInfo(int id)

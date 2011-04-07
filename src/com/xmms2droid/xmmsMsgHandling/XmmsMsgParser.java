@@ -24,6 +24,7 @@ import java.util.HashMap;
 
 public class XmmsMsgParser {
 	
+	//\TODO FIXME
 	public static ServerMsg parseMsg(ByteBuffer header, ByteBuffer msg)
 	{
 		int headerObject = XmmsHeaderParser.getObject(header);

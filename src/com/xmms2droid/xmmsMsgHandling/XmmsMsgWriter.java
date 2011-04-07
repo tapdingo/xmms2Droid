@@ -24,65 +24,72 @@ import java.nio.ByteBuffer;
 
 public class XmmsMsgWriter {
 	
+	private final int shiftFac = 32;
+	
+	public ByteBuffer generateSimpleRequest(int objectID, int commandID, int cookie)
+	{
+		ByteBuffer request = allocateMinimalPacket();
+		writeHeader(
+				request,
+				objectID,
+				commandID,
+				cookie,
+				4);
+		request.putInt(0);
+		request.flip();
+		return request;
+	}
+	
 	public ByteBuffer generatePlayMsg()
 	{
-		ByteBuffer playMsg = allocateHeader();
-		writeHeader(
-				playMsg,
+		ByteBuffer playMsg = generateSimpleRequest(
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
-				IPCCommand.getCommandId(IPCCommands.START),
-				Xmms2Cookies.PLAY_COOKIE,
-				0);	
-		playMsg.flip();
+				IPCCommandWrapper.getCommandID(PlayBackIPCCommands.START),
+				Xmms2Cookies.PLAY_COOKIE);
 		return playMsg;
 	}
 	
+	//\todo FIXME
 	public ByteBuffer generateStatusReqMsg()
 	{
-		ByteBuffer statusReqMsg = allocateHeader();
+		ByteBuffer statusReqMsg = allocateMinimalPacket();
 		writeHeader(
 				statusReqMsg, 
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
-				IPCCommand.getCommandId(IPCCommands.OUTPUT_STATUS),
+				IPCCommandWrapper.getCommandID(PlayBackIPCCommands.OUTPUT_STATUS),
 				Xmms2Cookies.PLAYBACKSTATE_COOKIE, 
-				0);
+				4);
+		statusReqMsg.putInt(0);
 		statusReqMsg.flip();
 		return statusReqMsg;
 	}
 	
 	public ByteBuffer generateStopMsg()
 	{
-		ByteBuffer stopMsg = allocateHeader();
-		writeHeader(
-				stopMsg,
+		ByteBuffer stopMsg = generateSimpleRequest(
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
-				IPCCommand.getCommandId(IPCCommands.STOP),
-				Xmms2Cookies.STOP_COOKIE,
-				0);	
-		stopMsg.flip();
+				IPCCommandWrapper.getCommandID(PlayBackIPCCommands.STOP),
+				Xmms2Cookies.STOP_COOKIE);
 		return stopMsg;
 	}
 		
 	public ByteBuffer generatePauseMsg()
 	{
-		ByteBuffer pauseMsg = allocateHeader();
-		writeHeader(
-				pauseMsg,
+		ByteBuffer pauseMsg = generateSimpleRequest(
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
-				IPCCommand.getCommandId(IPCCommands.PAUSE),
-				Xmms2Cookies.PAUSE_COOKIE,
-				0);	
-		pauseMsg.flip();
+				IPCCommandWrapper.getCommandID(PlayBackIPCCommands.PAUSE),
+				Xmms2Cookies.PAUSE_COOKIE);
 		return pauseMsg;
 	}
 	
+	//\TODO UPDATE ME
 	public ByteBuffer generateVolReqMsg()
 	{
-		ByteBuffer volReqMsg = allocateHeader();
+		ByteBuffer volReqMsg = allocateMinimalPacket();
 		writeHeader(
 				volReqMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
-				IPCCommand.getCommandId(IPCCommands.VOLGET),
+				PlayBackIPCCommands.VOLGET.ordinal() + shiftFac,
 				Xmms2Cookies.GETVOL_COOKIE,
 				0);	
 		
@@ -90,6 +97,7 @@ public class XmmsMsgWriter {
 		return volReqMsg;
 	}
 	
+	//\TODO UPDATE ME
 	public ByteBuffer generateVolumeMsg(int newVol, String channel)
 	{
 		//This is the len without the channel string
@@ -101,7 +109,7 @@ public class XmmsMsgWriter {
 		
 		writeHeader(volReqMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
-				IPCCommand.getCommandId(IPCCommands.VOLSET),
+				PlayBackIPCCommands.VOLSET.ordinal() + shiftFac,
 				Xmms2Cookies.SETVOL_COOKIE,
 				totalLen);
 		putString(volReqMsg, channel);
@@ -118,11 +126,12 @@ public class XmmsMsgWriter {
 		tgt.putInt(payload);
 	}
 	
-	private ByteBuffer allocateHeader()
+	private ByteBuffer allocateMinimalPacket()
 	{
-		return ByteBuffer.allocate(16);
+		return ByteBuffer.allocate(20);
 	}
 	
+	//\TODO UPDATE ME
 	public ByteBuffer generateHelloMsg()
 	{
 		//This is the len without the channel string
@@ -130,18 +139,35 @@ public class XmmsMsgWriter {
 		final int totalLen = clientName.length() + 1 + 8; //Don't forget the \0
 		//30 Bytes is the longest possible payload length for the RIGHT channel
 		//To come: handle all channels...
-		ByteBuffer helloMsg = ByteBuffer.allocate(35);
+		ByteBuffer helloMsg = ByteBuffer.allocate(20);
 		
 		writeHeader(helloMsg,
-				IPCObject.getObjectId(IPCObjects.MAIN),
+				4,
+				32,
 				0,
-				Xmms2Cookies.HELLO_COOKIE,
-				totalLen);
+				4);
 		
 		//Version number
 		//\TODO get the correct version number
-		helloMsg.putInt(11);
-		putString(helloMsg, clientName);
+		helloMsg.putInt(0);
+		/*helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);
+		helloMsg.putLong(0);*/
+		//helloMsg.putInt(18);
+		//putString(helloMsg, clientName);
 
 		helloMsg.flip();
 		return helloMsg;
@@ -161,9 +187,10 @@ public class XmmsMsgWriter {
 		buf.put((byte)0);
 	}
 	
+	//\TODO Replace Magic Number
 	public ByteBuffer generateTrackReqMsg()
 	{
-		ByteBuffer trackReqMsg = allocateHeader();
+		ByteBuffer trackReqMsg = allocateMinimalPacket();
 		writeHeader(
 				trackReqMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
@@ -174,13 +201,14 @@ public class XmmsMsgWriter {
 		return trackReqMsg;
 	}
 	
+	//\TODO UPDATE ME
 	public ByteBuffer generateTrackInfoReqMsg(int id)
 	{
 		ByteBuffer trackInfoReq = ByteBuffer.allocate(20);
 		writeHeader(
 				trackInfoReq,
 				IPCObject.getObjectId(IPCObjects.MEDIALIB),
-				IPCCommand.getCommandId(IPCCommands.INFO),
+				0,
 				Xmms2Cookies.TRACKINFOREQ_COOKIE,
 				4);
 		trackInfoReq.putInt(id);
@@ -188,6 +216,7 @@ public class XmmsMsgWriter {
 		return trackInfoReq;
 	}
 
+	//\TODO Replace Magic Number
 	public ByteBuffer generateListChangeMsg(int i) 
 	{
 		ByteBuffer listChangeReq = ByteBuffer.allocate(20);
@@ -202,17 +231,32 @@ public class XmmsMsgWriter {
 		return listChangeReq;
 	}
 
+	//\TODO UPDATE ME
 	public ByteBuffer generateTickleMsg()
 	{
-		ByteBuffer tickleMsg = allocateHeader();
+		ByteBuffer tickleMsg = allocateMinimalPacket();
 		writeHeader(
 				tickleMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
-				IPCCommand.getCommandId(IPCCommands.DECODER_KILL),
-				250,
+				0,
+				Xmms2Cookies.TICKLE_COOKIE,
 				0);	
 		tickleMsg.flip();
 		return tickleMsg;
+	}
+	
+	//\TODO UPDATE ME
+	public ByteBuffer generateReqPlaybackUpdateMsg()
+	{
+		ByteBuffer reqPlaybackUpdateMsg = allocateMinimalPacket();
+		writeHeader(
+				reqPlaybackUpdateMsg,
+				6,
+				32,
+				11,
+				0);	
+		reqPlaybackUpdateMsg.flip();
+		return reqPlaybackUpdateMsg;
 	}
 	
 	

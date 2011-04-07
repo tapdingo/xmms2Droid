@@ -21,6 +21,7 @@ package com.xmms2droid.xmmsMsgHandling;
 import java.util.HashMap;
 
 enum IPCObjects {
+	SIGNAL,
 	MAIN, 
 	PLAYLIST, 
 	CONFIG,
