@@ -17,10 +17,39 @@
  */
 
 package com.xmms2droid.xmmsMsgHandling;
+import android.util.Log; 
+
+
+enum MainIPCCommands {
+	 HELLO,
+	 QUIT,
+	 PLUGIN_LIST,
+	 STATS
+}
 
 enum PlayListIPCCommands {
-	
+	SHUFFLE,
+	SET_POS,
+	SET_POS_REL,
+	ADD_URL,
+	ADD_ID,
+	ADD_IDLIST,
+	ADD_COLL,
+	REMOVE_ENTRY,
+	MOVE_ENTRY,
+	CLEAR,
+	SORT,
+	LIST,
+	CURRENT_POS,
+	CURRENT_ACTIVE,
+	INSERT_URL,
+	INSERT_ID,
+	INSERT_COLL,
+	LOAD,
+	RADD,
+	RINSERT
 }
+
 
 enum PlayBackIPCCommands {
 	START,
@@ -44,8 +73,9 @@ public class IPCCommandWrapper {
 	
 	private static final int shiftFac = 32;
 	
-	public static int getCommandID(PlayBackIPCCommands cmd)
+	public static int getCommandID(java.lang.Enum cmd)
 	{
+		Log.d("Wrapper", "Command: " + cmd.ordinal() + shiftFac);
 		return cmd.ordinal() + shiftFac;
 	}
 	
@@ -54,8 +84,4 @@ public class IPCCommandWrapper {
 		int ordinal = id - shiftFac;
 		return PlayBackIPCCommands.values()[ordinal];
 	}
-}
-
-enum MainIPCCommands {
-	HELLO,
 }
