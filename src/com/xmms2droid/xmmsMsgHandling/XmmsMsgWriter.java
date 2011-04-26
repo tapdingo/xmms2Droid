@@ -87,7 +87,6 @@ public class XmmsMsgWriter {
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
 				IPCCommandWrapper.getCommandID(PlayBackIPCCommands.VOLGET),
 				Xmms2Cookies.GETVOL_COOKIE);
-		volReqMsg.flip();
 		return volReqMsg;
 	}
 	
