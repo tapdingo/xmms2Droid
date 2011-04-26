@@ -23,9 +23,7 @@ import java.nio.ByteBuffer;
 
 
 public class XmmsMsgWriter {
-	
-	private final int shiftFac = 32;
-	
+		
 	public ByteBuffer generateSimpleRequest(int objectID, int commandID, int cookie)
 	{
 		ByteBuffer request = allocateMinimalPacket();
@@ -85,14 +83,10 @@ public class XmmsMsgWriter {
 	//\TODO UPDATE ME
 	public ByteBuffer generateVolReqMsg()
 	{
-		ByteBuffer volReqMsg = allocateMinimalPacket();
-		writeHeader(
-				volReqMsg,
+		ByteBuffer volReqMsg = generateSimpleRequest(
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
-				PlayBackIPCCommands.VOLGET.ordinal() + shiftFac,
-				Xmms2Cookies.GETVOL_COOKIE,
-				0);	
-		
+				IPCCommandWrapper.getCommandID(PlayBackIPCCommands.VOLGET),
+				Xmms2Cookies.GETVOL_COOKIE);
 		volReqMsg.flip();
 		return volReqMsg;
 	}
@@ -109,7 +103,7 @@ public class XmmsMsgWriter {
 		
 		writeHeader(volReqMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
-				PlayBackIPCCommands.VOLSET.ordinal() + shiftFac,
+				PlayBackIPCCommands.VOLSET.ordinal() + 32,
 				Xmms2Cookies.SETVOL_COOKIE,
 				totalLen);
 		putString(volReqMsg, channel);
@@ -136,9 +130,7 @@ public class XmmsMsgWriter {
 	{
 		//This is the len without the channel string
 		final String clientName = "xmmsdroid";
-		final int totalLen = clientName.length() + 1 + 8; //Don't forget the \0
-		//30 Bytes is the longest possible payload length for the RIGHT channel
-		//To come: handle all channels...
+		final int totalLen = clientName.length() + 1 + 8; //Don't forget the \0.
 		ByteBuffer helloMsg = ByteBuffer.allocate(20);
 		
 		writeHeader(helloMsg,
