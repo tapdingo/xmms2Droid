@@ -102,7 +102,7 @@ public class XmmsMsgWriter {
 		
 		writeHeader(volReqMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
-				PlayBackIPCCommands.VOLSET.ordinal() + 32,
+				IPCCommandWrapper.getCommandID(PlayBackIPCCommands.VOLSET),
 				Xmms2Cookies.SETVOL_COOKIE,
 				totalLen);
 		putString(volReqMsg, channel);

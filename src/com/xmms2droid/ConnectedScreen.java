@@ -78,17 +78,16 @@ public class ConnectedScreen extends TabActivity {
         m_pauseButton.setOnClickListener(pauseListener);
         
       //\TODO UPDATE ME
-       /* m_incVolButton = (Button) findViewById(R.id.incVol);
+        m_incVolButton = (Button) findViewById(R.id.incVol);
         m_incVolButton.setOnClickListener(incVolListener);
         m_decVolButton = (Button) findViewById(R.id.decVol);
         m_decVolButton.setOnClickListener(decVolListener);
         m_muteButton = (Button) findViewById(R.id.mute);
         m_muteButton.setOnClickListener(muteListener);
-        m_nextButton = (Button) findViewById(R.id.next);
-        m_nextButton.setOnClickListener(nextListener);
-        m_prevButton = (Button) findViewById(R.id.prev);
-        m_prevButton.setOnClickListener(prevListener);
-        */
+        //m_nextButton = (Button) findViewById(R.id.next);
+        //m_nextButton.setOnClickListener(nextListener);
+        //m_prevButton = (Button) findViewById(R.id.prev);
+        //m_prevButton.setOnClickListener(prevListener);
         
         m_volumeView = (TextView) findViewById(R.id.volume);
         m_playStateView = (TextView) findViewById(R.id.playStatus);
