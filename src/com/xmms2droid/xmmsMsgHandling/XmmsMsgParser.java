@@ -147,6 +147,8 @@ public class XmmsMsgParser {
 		{
 			case Xmms2Cookies.REGPLAYBACKUPDATE_COOKIE:
 				return parsePlayStateMsg(msg);
+			case Xmms2Cookies.REGTRACKUPDATE_COOKIE:
+				return parseTrackIdMsg(msg);
 		}
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}

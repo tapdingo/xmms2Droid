@@ -111,6 +111,7 @@ public class ConnectedScreen extends TabActivity {
         updatePlaybackStatus();
         updatePlayingTrack();
         registerPlayBackUpdate();
+        registerTrackUpdate();
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
@@ -243,6 +244,12 @@ public class ConnectedScreen extends TabActivity {
 	{
 		ByteBuffer reqPlayUpdateMsg = m_msgWriter.generateReqPlaybackUpdateMsg();
 		m_app.netModule.send(reqPlayUpdateMsg);
+	}
+	
+	private void registerTrackUpdate()
+	{
+		ByteBuffer reqTrackUpdateMsg = m_msgWriter.generateReqTrackUpdateMsg();
+		m_app.netModule.send(reqTrackUpdateMsg);
 	}
 	
 	private void requestTrackInfo(int id)

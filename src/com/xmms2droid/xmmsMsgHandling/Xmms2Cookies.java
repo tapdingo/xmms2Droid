@@ -15,4 +15,5 @@ public class Xmms2Cookies {
 	public static final int LISTCHANGE_REL_COOKIE = 10;
 	public static final int TICKLE_COOKIE = 11;
 	public static final int REGPLAYBACKUPDATE_COOKIE = 12;
+	public static final int REGTRACKUPDATE_COOKIE = 13;
 }

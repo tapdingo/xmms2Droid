@@ -196,10 +196,26 @@ public class XmmsMsgWriter {
 				Xmms2Cookies.REGPLAYBACKUPDATE_COOKIE,
 				totalLen);
 		
-		putListHead(reqPlaybackUpdateMsg, 1); //2 Arguments: Protocol Version, ClientName
+		putListHead(reqPlaybackUpdateMsg, 1);
 		putInt32(reqPlaybackUpdateMsg, IPCSignal.getSignalId(IPCSignals.PLAYBACK_STATUS));
 		reqPlaybackUpdateMsg.flip();
 		return reqPlaybackUpdateMsg;
+	}
+	
+	public ByteBuffer generateReqTrackUpdateMsg()
+	{
+		final int totalLen = 16;
+		ByteBuffer reqTrackUpdateMsg = ByteBuffer.allocate(totalLen + HEADER_LEN);
+		writeHeader(reqTrackUpdateMsg,
+				IPCObject.getObjectId(IPCObjects.SIGNAL),
+				33,
+				Xmms2Cookies.REGTRACKUPDATE_COOKIE,
+				totalLen);
+		
+		putListHead(reqTrackUpdateMsg, 1); 
+		putInt32(reqTrackUpdateMsg, IPCSignal.getSignalId(IPCSignals.OUTPUT_CURRENTID));
+		reqTrackUpdateMsg.flip();
+		return reqTrackUpdateMsg;
 	}
 	
 	public ByteBuffer generateSimpleRequest(int objectID, int commandID, int cookie)
