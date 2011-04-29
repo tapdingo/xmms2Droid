@@ -109,7 +109,7 @@ public class ConnectedScreen extends TabActivity {
         sayHello();
         updateVolume();
         updatePlaybackStatus();
-       //updatePlayingTrack();
+        updatePlayingTrack();
        //registerPlayBackUpdate();
     }
     
@@ -266,14 +266,14 @@ public class ConnectedScreen extends TabActivity {
 	
 	private void handleTrackInfoMsg(ServerTrackInfoMsg msg)
 	{
-		m_curArtist = (String) msg.getTrackInfo().get("plugin/id3v2").get("artist");
-		m_curSong = (String) msg.getTrackInfo().get("plugin/id3v2").get("title");
+		m_curArtist = (String) msg.getTrackInfo().get("artist").get("plugin/id3v2");
+		m_curSong = (String) msg.getTrackInfo().get("title").get("plugin/id3v2");
 		runOnUiThread(updateTrackDisplay);
 	}
 	
 	private void handleTrackIdMsg(ServerTrackIdMsg msg)
 	{
-		//requestTrackInfo(msg.getId());
+		requestTrackInfo(msg.getId());
 	}
 	
 	private void handlePlaybackStateMsg(ServerStateMsg msg)

@@ -49,6 +49,18 @@ enum PlayListIPCCommands {
 	RADD,
 	RINSERT
 }
+enum MediaLibIPCCommands {
+	INFO,
+	PATH_IMPORT,
+	REHASH,
+	GET_ID,
+	REMOVE_ID,
+	PROPERTY_SET_STR,
+	PROPERTY_SET_INT,
+	PROPERTY_REMOVE,
+	MOVE_URL,
+	XMLIB_ADD_URL
+}
 
 
 enum PlayBackIPCCommands {

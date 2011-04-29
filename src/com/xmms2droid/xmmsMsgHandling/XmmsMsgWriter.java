@@ -14,6 +14,9 @@
  *
  *   You should have received a copy of the GNU General Public License
  *   along with XMMS2Droid.  If not, see <http://www.gnu.org/licenses/>
+ *   
+ *   \TODO The generation of messages with arguments should be improved
+ *   It's always the same, refactor it into a method...
  */
 
 package com.xmms2droid.xmmsMsgHandling;
@@ -28,19 +31,7 @@ public class XmmsMsgWriter {
 	private static final int PROTOCOL_VERSION = 18;
 	private static final String CLIENT_NAME = "XMMS2DROID";
 		
-	public ByteBuffer generateSimpleRequest(int objectID, int commandID, int cookie)
-	{
-		ByteBuffer request = allocateMinimalPacket();
-		writeHeader(
-				request,
-				objectID,
-				commandID,
-				cookie,
-				4);
-		request.putInt(0);
-		request.flip();
-		return request;
-	}
+
 	
 	public ByteBuffer generatePlayMsg()
 	{
@@ -147,64 +138,33 @@ public class XmmsMsgWriter {
 		return helloMsg;
 	}
 	
-	private void putString(ByteBuffer buf, String msg)
-	{
-		
-		final int len = msg.length() + 1; //String + 0 Byte
-		buf.putInt(XmmsTypeIds.getTypeId(XmmsTypes.STRING));
-		buf.putInt(len);
-		byte[] bytes = null;
-		try {
-			bytes = msg.getBytes("utf-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-		buf.put(bytes);
-		buf.put((byte)0);
-	}
-	
-	private void putInt32(ByteBuffer buf, Integer val)
-	{
-		buf.putInt(XmmsTypeIds.getTypeId(XmmsTypes.INT32));
-		buf.putInt(val);
-	}
-	
-	private void putListHead(ByteBuffer buf, Integer len)
-	{
-		buf.putInt(XmmsTypeIds.getTypeId(XmmsTypes.LIST));
-		buf.putInt(len);
-	}
-	
-	//\TODO Replace Magic Number
 	public ByteBuffer generateTrackReqMsg()
 	{
-		ByteBuffer trackReqMsg = allocateMinimalPacket();
-		writeHeader(
-				trackReqMsg,
+		ByteBuffer trackReqMsg = generateSimpleRequest(
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
-				39,
-				Xmms2Cookies.TRACKREQ_COOKIE,
-				0);	
-		trackReqMsg.flip();
+				IPCCommandWrapper.getCommandID(PlayBackIPCCommands.CURRENTID),
+				Xmms2Cookies.TRACKREQ_COOKIE);
 		return trackReqMsg;
 	}
 	
-	//\TODO UPDATE ME
 	public ByteBuffer generateTrackInfoReqMsg(int id)
 	{
-		ByteBuffer trackInfoReq = ByteBuffer.allocate(20);
+		//8 Byte List Info
+		//8 Byte Track ID Info
+		final int totalLen = 16;
+		ByteBuffer trackInfoReq = ByteBuffer.allocate(totalLen + HEADER_LEN);
 		writeHeader(
 				trackInfoReq,
 				IPCObject.getObjectId(IPCObjects.MEDIALIB),
-				0,
+				IPCCommandWrapper.getCommandID(MediaLibIPCCommands.INFO),
 				Xmms2Cookies.TRACKINFOREQ_COOKIE,
-				4);
-		trackInfoReq.putInt(id);
+				totalLen);
+		putListHead(trackInfoReq, 1);
+		putInt32(trackInfoReq, id);
 		trackInfoReq.flip();
 		return trackInfoReq;
 	}
 
-	//\TODO Replace Magic Number
 	public ByteBuffer generateListChangeMsg(int i) 
 	{
 		ByteBuffer listChangeReq = ByteBuffer.allocate(32);
@@ -241,5 +201,47 @@ public class XmmsMsgWriter {
 				0);	
 		reqPlaybackUpdateMsg.flip();
 		return reqPlaybackUpdateMsg;
+	}
+	
+	public ByteBuffer generateSimpleRequest(int objectID, int commandID, int cookie)
+	{
+		ByteBuffer request = allocateMinimalPacket();
+		writeHeader(
+				request,
+				objectID,
+				commandID,
+				cookie,
+				4);
+		request.putInt(0);
+		request.flip();
+		return request;
+	}
+	
+	private void putString(ByteBuffer buf, String msg)
+	{
+		
+		final int len = msg.length() + 1; //String + 0 Byte
+		buf.putInt(XmmsTypeIds.getTypeId(XmmsTypes.STRING));
+		buf.putInt(len);
+		byte[] bytes = null;
+		try {
+			bytes = msg.getBytes("utf-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		buf.put(bytes);
+		buf.put((byte)0);
+	}
+	
+	private void putInt32(ByteBuffer buf, Integer val)
+	{
+		buf.putInt(XmmsTypeIds.getTypeId(XmmsTypes.INT32));
+		buf.putInt(val);
+	}
+	
+	private void putListHead(ByteBuffer buf, Integer len)
+	{
+		buf.putInt(XmmsTypeIds.getTypeId(XmmsTypes.LIST));
+		buf.putInt(len);
 	}
 }

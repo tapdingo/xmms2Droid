@@ -22,7 +22,14 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
+class DictEntry {
+	public String key;
+	public Object value;
+}
+
 public class DictParser {
+	
+
 	
 	public static HashMap<String, Integer> parseDict(ByteBuffer buf)
 	{	
@@ -46,35 +53,53 @@ public class DictParser {
 	
 	public static HashMap<String, HashMap<String, Object>> parseTrackInfo(ByteBuffer buf)
 	{
-		int len = buf.getInt();
-		//Weird structure here... 2 Keys than a value...
+		//This has been modified in new server versions, much more consistent now...
 		HashMap<String, HashMap<String, Object>> vals = new HashMap<String, HashMap<String, Object>>();
-		
-		//We get three values - 2 Keys 1 Value - in every pass, so i+= 3
-		for (int i = 0; i < len; i+= 3)
+
+		int len = buf.getInt();
+		for (int i = 0; i < len; i++)
 		{
-			//FirstType is ALWAYS a String *cough*
-			buf.getInt();
 			String outerKey = getString(buf);
-			//SecondType is ALWAYS a String *cough*
-			buf.getInt();
-			String innerKey = getString(buf);
+			int innerType = buf.getInt();
 			
-			int valType = buf.getInt();
-			
-			switch(valType)
+			switch (innerType)
 			{
-			case 3:
-				String strVal = getString(buf);
-				addValueToMap(vals, innerKey, outerKey, strVal);
-				break;
-			case 2:
-				int intVal = buf.getInt();
-				addValueToMap(vals, innerKey, outerKey, intVal);
+			case 7:
+				DictEntry curEntry = parseInnerDict(buf);
+				addValueToMap(vals, curEntry.key, outerKey, curEntry.value);
 				break;
 			}
 		}
 		return vals;
+	}
+	
+	private static DictEntry parseInnerDict(ByteBuffer buf)
+	{
+		DictEntry parsedVal = new DictEntry();
+		
+		final int innerLen = buf.getInt();
+		Object value = 0;
+		
+		for (int i = 0; i < innerLen; i++)
+		{
+			final String innerKey = getString(buf);
+			final int innerType = buf.getInt();
+			switch(innerType)
+			{
+			
+			//Only Integer and Strings for now in inner Dictionaries...
+			case 2:
+				value = buf.getInt();
+				break;
+			case 3:
+				value = getString(buf);
+				break;
+				
+			}
+			parsedVal.key = innerKey;
+			parsedVal.value = value;
+		}	
+		return parsedVal;
 	}
 	
 	private static void addValueToMap(HashMap<String, HashMap<String, Object>> valMap,String innerKey, String outerKey, Object val)
@@ -118,7 +143,6 @@ public class DictParser {
 		}
 		
 		return recString;
-		
 	}
 
 }
