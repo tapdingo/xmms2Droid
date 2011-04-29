@@ -107,8 +107,8 @@ public class ConnectedScreen extends TabActivity {
         getTabHost().setCurrentTab(0);
         
         new Thread(readerTask).start();
-       //sayHello();
-       updateVolume();
+        sayHello();
+        updateVolume();
        //updatePlaybackStatus();
        //updatePlayingTrack();
        //registerPlayBackUpdate();
@@ -120,8 +120,7 @@ public class ConnectedScreen extends TabActivity {
 			ByteBuffer startMsg = m_msgWriter.generatePlayMsg();
 			m_netModule.send(startMsg);
 			//\TODO FIXME
-			//updatePlaybackStatus();
-			
+			//updatePlaybackStatus();	
 		}
 	};
 	

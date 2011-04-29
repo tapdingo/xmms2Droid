@@ -25,6 +25,8 @@ import java.nio.ByteBuffer;
 public class XmmsMsgWriter {
 	
 	private static final int HEADER_LEN = 16;
+	private static final int PROTOCOL_VERSION = 18;
+	private static final String CLIENT_NAME = "XMMS2DROID";
 		
 	public ByteBuffer generateSimpleRequest(int objectID, int commandID, int cookie)
 	{
@@ -92,10 +94,8 @@ public class XmmsMsgWriter {
 		return volReqMsg;
 	}
 	
-	//\TODO UPDATE ME
 	public ByteBuffer generateVolumeMsg(int newVol, String channel)
-	{
-		
+	{	
 		//This is the len without the channel string: 
 		// 8 Byte List Information
 		// 8 Byte String Information
@@ -130,23 +130,25 @@ public class XmmsMsgWriter {
 		return ByteBuffer.allocate(20);
 	}
 	
-	//\TODO UPDATE ME
 	public ByteBuffer generateHelloMsg()
 	{
-		//This is the len without the channel string
-		final String clientName = "xmmsdroid";
-		final int totalLen = clientName.length() + 1 + 8; //Don't forget the \0.
-		ByteBuffer helloMsg = ByteBuffer.allocate(20);
+		//This is the len without the channel string: 
+		// 8 Byte List Information
+		// 8 Byte Protocol Information
+		// 8 Byte String Information
+		final int lenRaw = 24;
+		final int totalLen = CLIENT_NAME.length() + 1 + lenRaw; //Don't forget the \0
+		ByteBuffer helloMsg = ByteBuffer.allocate(totalLen + HEADER_LEN);
 		
 		writeHeader(helloMsg,
-				4,
-				32,
-				0,
-				4);
+				IPCObject.getObjectId(IPCObjects.MAIN),
+				IPCCommandWrapper.getCommandID(MainIPCCommands.HELLO),
+				Xmms2Cookies.HELLO_COOKIE,
+				totalLen);
 		
-		//Version number
-		//\TODO get the correct version number
-		helloMsg.putInt(0);
+		putListHead(helloMsg, 2); //2 Arguments: Protocol Version, ClientName
+		putInt32(helloMsg, PROTOCOL_VERSION);
+		putString(helloMsg, CLIENT_NAME);
 		helloMsg.flip();
 		return helloMsg;
 	}
