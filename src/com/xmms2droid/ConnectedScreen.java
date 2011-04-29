@@ -109,7 +109,7 @@ public class ConnectedScreen extends TabActivity {
         new Thread(readerTask).start();
         sayHello();
         updateVolume();
-       //updatePlaybackStatus();
+        updatePlaybackStatus();
        //updatePlayingTrack();
        //registerPlayBackUpdate();
     }
@@ -119,8 +119,7 @@ public class ConnectedScreen extends TabActivity {
 		public void onClick(View arg0) {
 			ByteBuffer startMsg = m_msgWriter.generatePlayMsg();
 			m_netModule.send(startMsg);
-			//\TODO FIXME
-			//updatePlaybackStatus();	
+			updatePlaybackStatus();	
 		}
 	};
 	
@@ -151,8 +150,7 @@ public class ConnectedScreen extends TabActivity {
 		public void onClick(View arg0) {
 			ByteBuffer stopMsg = m_msgWriter.generateStopMsg();
 			m_netModule.send(stopMsg);
-			//\TODO FIXME
-			//updatePlaybackStatus();
+			updatePlaybackStatus();
 		}
 	};
 	
@@ -162,9 +160,7 @@ public class ConnectedScreen extends TabActivity {
 		public void onClick(View arg0) {
 			ByteBuffer pauseMsg = m_msgWriter.generatePauseMsg();
 			m_netModule.send(pauseMsg);
-			
-			//\TODO FIXME
-			//updatePlaybackStatus();
+			updatePlaybackStatus();
 		}
 	};
 	

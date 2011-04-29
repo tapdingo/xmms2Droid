@@ -51,18 +51,12 @@ public class XmmsMsgWriter {
 		return playMsg;
 	}
 	
-	//\todo FIXME
 	public ByteBuffer generateStatusReqMsg()
 	{
-		ByteBuffer statusReqMsg = allocateMinimalPacket();
-		writeHeader(
-				statusReqMsg, 
+		ByteBuffer statusReqMsg = generateSimpleRequest(
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
 				IPCCommandWrapper.getCommandID(PlayBackIPCCommands.OUTPUT_STATUS),
-				Xmms2Cookies.PLAYBACKSTATE_COOKIE, 
-				4);
-		statusReqMsg.putInt(0);
-		statusReqMsg.flip();
+				Xmms2Cookies.PLAYBACKSTATE_COOKIE);
 		return statusReqMsg;
 	}
 	
