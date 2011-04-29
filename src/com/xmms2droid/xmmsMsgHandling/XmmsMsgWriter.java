@@ -31,8 +31,6 @@ public class XmmsMsgWriter {
 	private static final int PROTOCOL_VERSION = 18;
 	private static final String CLIENT_NAME = "XMMS2DROID";
 		
-
-	
 	public ByteBuffer generatePlayMsg()
 	{
 		ByteBuffer playMsg = generateSimpleRequest(
@@ -69,7 +67,6 @@ public class XmmsMsgWriter {
 		return pauseMsg;
 	}
 	
-	//\TODO UPDATE ME
 	public ByteBuffer generateVolReqMsg()
 	{
 		ByteBuffer volReqMsg = generateSimpleRequest(
@@ -189,16 +186,18 @@ public class XmmsMsgWriter {
 		return tickleMsg;
 	}
 	
-	//\TODO UPDATE ME
 	public ByteBuffer generateReqPlaybackUpdateMsg()
 	{
-		ByteBuffer reqPlaybackUpdateMsg = allocateMinimalPacket();
-		writeHeader(
-				reqPlaybackUpdateMsg,
-				6,
-				32,
-				11,
-				0);	
+		final int totalLen = 16;
+		ByteBuffer reqPlaybackUpdateMsg = ByteBuffer.allocate(totalLen + HEADER_LEN);
+		writeHeader(reqPlaybackUpdateMsg,
+				IPCObject.getObjectId(IPCObjects.SIGNAL),
+				33,
+				Xmms2Cookies.REGPLAYBACKUPDATE_COOKIE,
+				totalLen);
+		
+		putListHead(reqPlaybackUpdateMsg, 1); //2 Arguments: Protocol Version, ClientName
+		putInt32(reqPlaybackUpdateMsg, IPCSignal.getSignalId(IPCSignals.PLAYBACK_STATUS));
 		reqPlaybackUpdateMsg.flip();
 		return reqPlaybackUpdateMsg;
 	}

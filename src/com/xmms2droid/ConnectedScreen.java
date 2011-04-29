@@ -110,7 +110,7 @@ public class ConnectedScreen extends TabActivity {
         updateVolume();
         updatePlaybackStatus();
         updatePlayingTrack();
-       //registerPlayBackUpdate();
+        registerPlayBackUpdate();
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {

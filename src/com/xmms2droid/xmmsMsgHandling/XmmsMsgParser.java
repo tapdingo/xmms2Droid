@@ -46,6 +46,8 @@ public class XmmsMsgParser {
 			return parseMediaLibMsg(msg, signal, cookie);
 		case PLAYLIST:
 			return parsePlayListMsg(msg, signal, cookie);
+		case SIGNAL:
+			return parseBroadcastMsg(msg, signal, cookie);
 		}
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
@@ -138,5 +140,14 @@ public class XmmsMsgParser {
 		msg.getInt();
 		return new ServerTrackIdMsg(SrvMsgTypes.TRACKID_MSG, msg.getInt());
 	}
-
+	
+	private static ServerMsg parseBroadcastMsg(ByteBuffer msg, IPCSignals cmd, int cookie)
+	{
+		switch (cookie)
+		{
+			case Xmms2Cookies.REGPLAYBACKUPDATE_COOKIE:
+				return parsePlayStateMsg(msg);
+		}
+		return new ServerMsg(SrvMsgTypes.UNKNOWN);
+	}
 }
