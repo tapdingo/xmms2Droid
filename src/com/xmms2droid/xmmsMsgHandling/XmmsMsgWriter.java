@@ -23,6 +23,8 @@ import java.nio.ByteBuffer;
 
 
 public class XmmsMsgWriter {
+	
+	private static final int HEADER_LEN = 16;
 		
 	public ByteBuffer generateSimpleRequest(int objectID, int commandID, int cookie)
 	{
@@ -93,20 +95,24 @@ public class XmmsMsgWriter {
 	//\TODO UPDATE ME
 	public ByteBuffer generateVolumeMsg(int newVol, String channel)
 	{
-		//This is the len without the channel string
-		final int lenRaw = 8;
+		
+		//This is the len without the channel string: 
+		// 8 Byte List Information
+		// 8 Byte String Information
+		// 8 Byte Volume Information
+		final int lenRaw = 24;
 		final int totalLen = channel.length() + 1 + lenRaw; //Don't forget the \0
-		//30 Bytes is the longest possible payload length for the RIGHT channel
-		//To come: handle all channels...
-		ByteBuffer volReqMsg = ByteBuffer.allocate(30);
+		ByteBuffer volReqMsg = ByteBuffer.allocate(totalLen + HEADER_LEN);
 		
 		writeHeader(volReqMsg,
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
 				IPCCommandWrapper.getCommandID(PlayBackIPCCommands.VOLSET),
 				Xmms2Cookies.SETVOL_COOKIE,
 				totalLen);
+		
+		putListHead(volReqMsg, 2); //2 Arguments: Channel, volume
 		putString(volReqMsg, channel);
-		volReqMsg.putInt(newVol);
+		putInt32(volReqMsg, newVol);
 		volReqMsg.flip();
 		return volReqMsg;
 	}
@@ -141,32 +147,15 @@ public class XmmsMsgWriter {
 		//Version number
 		//\TODO get the correct version number
 		helloMsg.putInt(0);
-		/*helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);
-		helloMsg.putLong(0);*/
-		//helloMsg.putInt(18);
-		//putString(helloMsg, clientName);
-
 		helloMsg.flip();
 		return helloMsg;
 	}
 	
 	private void putString(ByteBuffer buf, String msg)
 	{
-		final int len = msg.length() + 1;
+		
+		final int len = msg.length() + 1; //String + 0 Byte
+		buf.putInt(XmmsTypeIds.getTypeId(XmmsTypes.STRING));
 		buf.putInt(len);
 		byte[] bytes = null;
 		try {
@@ -176,6 +165,18 @@ public class XmmsMsgWriter {
 		}
 		buf.put(bytes);
 		buf.put((byte)0);
+	}
+	
+	private void putInt32(ByteBuffer buf, Integer val)
+	{
+		buf.putInt(XmmsTypeIds.getTypeId(XmmsTypes.INT32));
+		buf.putInt(val);
+	}
+	
+	private void putListHead(ByteBuffer buf, Integer len)
+	{
+		buf.putInt(XmmsTypeIds.getTypeId(XmmsTypes.LIST));
+		buf.putInt(len);
 	}
 	
 	//\TODO Replace Magic Number
