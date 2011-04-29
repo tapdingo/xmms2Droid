@@ -207,29 +207,25 @@ public class XmmsMsgWriter {
 	//\TODO Replace Magic Number
 	public ByteBuffer generateListChangeMsg(int i) 
 	{
-		ByteBuffer listChangeReq = ByteBuffer.allocate(20);
+		ByteBuffer listChangeReq = ByteBuffer.allocate(32);
 		writeHeader(
 				listChangeReq,
 				IPCObject.getObjectId(IPCObjects.PLAYLIST),
-				8,
+				IPCCommandWrapper.getCommandID(PlayListIPCCommands.SET_POS_REL),
 				Xmms2Cookies.LISTCHANGE_REL_COOKIE,
-				4);
-		listChangeReq.putInt(i);
+				16);
+		putListHead(listChangeReq, 1);
+		putInt32(listChangeReq, i);
 		listChangeReq.flip();
 		return listChangeReq;
 	}
 
-	//\TODO UPDATE ME
 	public ByteBuffer generateTickleMsg()
 	{
-		ByteBuffer tickleMsg = allocateMinimalPacket();
-		writeHeader(
-				tickleMsg,
+		ByteBuffer tickleMsg = generateSimpleRequest(
 				IPCObject.getObjectId(IPCObjects.OUTPUT),
-				0,
-				Xmms2Cookies.TICKLE_COOKIE,
-				0);	
-		tickleMsg.flip();
+				IPCCommandWrapper.getCommandID(PlayBackIPCCommands.DECODER_KILL),
+				Xmms2Cookies.TICKLE_COOKIE);
 		return tickleMsg;
 	}
 	
@@ -246,7 +242,4 @@ public class XmmsMsgWriter {
 		reqPlaybackUpdateMsg.flip();
 		return reqPlaybackUpdateMsg;
 	}
-	
-	
-
 }
