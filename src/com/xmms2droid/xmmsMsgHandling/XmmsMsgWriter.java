@@ -218,6 +218,24 @@ public class XmmsMsgWriter {
 		return reqTrackUpdateMsg;
 	}
 	
+	public ByteBuffer generatePlayListUpdateMsg(String name)
+	{
+		final int lenRaw = 16;
+		final int totalLen = name.length() + 1 + lenRaw; //Don't forget the \0
+		ByteBuffer plUpdateMsg = ByteBuffer.allocate(totalLen + HEADER_LEN);
+		
+		writeHeader(plUpdateMsg,
+				IPCObject.getObjectId(IPCObjects.PLAYLIST),
+				IPCCommandWrapper.getCommandID(PlayListIPCCommands.LIST),
+				Xmms2Cookies.PLAYLIST_REQUEST_COOKIE,
+				totalLen);
+		
+		putListHead(plUpdateMsg, 1);
+		putString(plUpdateMsg, name);
+		plUpdateMsg.flip();
+		return plUpdateMsg;	
+	}
+	
 	public ByteBuffer generateSimpleRequest(int objectID, int commandID, int cookie)
 	{
 		ByteBuffer request = allocateMinimalPacket();

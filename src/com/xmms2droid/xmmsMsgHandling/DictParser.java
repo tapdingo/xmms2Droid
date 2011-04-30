@@ -28,9 +28,7 @@ class DictEntry {
 }
 
 public class DictParser {
-	
 
-	
 	public static HashMap<String, Integer> parseDict(ByteBuffer buf)
 	{	
 		//LenBla

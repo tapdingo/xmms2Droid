@@ -19,9 +19,12 @@
 package com.xmms2droid;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import com.xmms2droid.xmmsMsgHandling.IPCCommandWrapper;
+import com.xmms2droid.xmmsMsgHandling.PlayListInfoMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerStateMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerTrackIdMsg;
@@ -31,7 +34,9 @@ import com.xmms2droid.xmmsMsgHandling.XmmsMsgParser;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgWriter;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.app.TabActivity;
@@ -60,6 +65,11 @@ public class ConnectedScreen extends TabActivity {
 	private String m_curArtist = "UNKNWON";
 	private TextView m_artistView = null;
 	private TextView m_titleView = null;
+	private ListView m_playListView = null;
+	private ArrayList<String> m_playList = new ArrayList<String>(); 
+	private ArrayAdapter<String> m_playListAdapter = null;
+	private HashMap<Integer, String> m_tracks = new HashMap<Integer, String>(); //Holds information about tracks;
+	private ArrayList<Integer> m_trackIds = new ArrayList<Integer>();
 	
     /** Called when the activity is first created. */
     @Override
@@ -93,6 +103,8 @@ public class ConnectedScreen extends TabActivity {
         m_artistView = (TextView) findViewById(R.id.artist);
         m_titleView = (TextView) findViewById(R.id.track);
         
+        m_playListView = (ListView) findViewById(R.id.playlist);
+        
         TabHost.TabSpec spec = getTabHost().newTabSpec("tag1");
         spec.setContent(R.id.controls);
         spec.setIndicator("Controls");
@@ -102,7 +114,6 @@ public class ConnectedScreen extends TabActivity {
         spec.setContent(R.id.playlist);
         spec.setIndicator("Playlist");
         getTabHost().addTab(spec);
-        
         getTabHost().setCurrentTab(0);
         
         new Thread(readerTask).start();
@@ -112,6 +123,10 @@ public class ConnectedScreen extends TabActivity {
         updatePlayingTrack();
         registerPlayBackUpdate();
         registerTrackUpdate();
+        updatePlaylist();
+        
+        m_playListAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, m_playList);
+        m_playListView.setAdapter(m_playListAdapter);
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
@@ -231,6 +246,9 @@ public class ConnectedScreen extends TabActivity {
 		case TRACKINFO_MSG:
 			handleTrackInfoMsg((ServerTrackInfoMsg) msg);
 			break;
+		case PLAYLIST_INFO_MSG:
+			handlePlayListInfoMsg ((PlayListInfoMsg) msg);
+			break;
 		}
 	}
 	
@@ -246,6 +264,12 @@ public class ConnectedScreen extends TabActivity {
 		m_app.netModule.send(reqPlayUpdateMsg);
 	}
 	
+	private void updatePlaylist()
+	{
+		ByteBuffer playListMsg = m_msgWriter.generatePlayListUpdateMsg("Default");
+		m_app.netModule.send(playListMsg);
+	}
+	
 	private void registerTrackUpdate()
 	{
 		ByteBuffer reqTrackUpdateMsg = m_msgWriter.generateReqTrackUpdateMsg();
@@ -254,6 +278,10 @@ public class ConnectedScreen extends TabActivity {
 	
 	private void requestTrackInfo(int id)
 	{
+		if (0 == id)
+		{
+			return;
+		}
 		ByteBuffer trackInfoMsg = m_msgWriter.generateTrackInfoReqMsg(id);
 		m_netModule.send(trackInfoMsg);
 	}
@@ -275,7 +303,17 @@ public class ConnectedScreen extends TabActivity {
 	{
 		m_curArtist = (String) msg.getTrackInfo().get("artist").get("plugin/id3v2");
 		m_curSong = (String) msg.getTrackInfo().get("title").get("plugin/id3v2");
+		
+		int id = (Integer) msg.getTrackInfo().get("id").get("server");
+		m_tracks.put(id, m_curArtist + " - " + m_curSong);
+		runOnUiThread(updatePlayListDisplay);
 		runOnUiThread(updateTrackDisplay);
+	}
+	
+	private void handlePlayListInfoMsg(PlayListInfoMsg msg)
+	{
+		m_trackIds = msg.ids;
+		runOnUiThread(updatePlayListDisplay);
 	}
 	
 	private void handleTrackIdMsg(ServerTrackIdMsg msg)
@@ -325,6 +363,28 @@ public class ConnectedScreen extends TabActivity {
 		public void run() {
 			m_artistView.setText(m_curArtist);
 			m_titleView.setText(m_curSong);
+		}
+	};
+	
+	private Runnable updatePlayListDisplay = new Runnable() {
+		@Override
+		public void run() {
+			int len = m_trackIds.size();
+			m_playListAdapter.clear();
+			
+			for (int i = 0; i < len; i++)
+			{
+				int id = m_trackIds.get(i);		
+				if (m_tracks.containsKey(id))
+				{
+					String trackInfo = m_tracks.get(id);
+					m_playListAdapter.add(trackInfo);
+				}
+				else
+				{
+					m_playListAdapter.add("UNKNOWN");	
+				}
+			}
 		}
 	};
 	

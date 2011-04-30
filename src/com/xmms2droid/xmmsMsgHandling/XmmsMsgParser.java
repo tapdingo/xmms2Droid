@@ -19,12 +19,12 @@
 package com.xmms2droid.xmmsMsgHandling;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 
 public class XmmsMsgParser {
 	
-	//\TODO FIXME
 	public static ServerMsg parseMsg(ByteBuffer header, ByteBuffer msg)
 	{
 		int headerObject = XmmsHeaderParser.getObject(header);
@@ -135,10 +135,14 @@ public class XmmsMsgParser {
 	
 	private static ServerMsg parsePlayListMsg(ByteBuffer msg, IPCSignals cmd, int cookie)
 	{
-		msg.flip();
-		//Type is irrelevant here
-		msg.getInt();
-		return new ServerTrackIdMsg(SrvMsgTypes.TRACKID_MSG, msg.getInt());
+		switch(cookie)
+		{
+		case Xmms2Cookies.TRACKREQ_COOKIE:
+			return requestTrackInfo(msg);
+		case Xmms2Cookies.PLAYLIST_REQUEST_COOKIE:
+			return updatePlaylist(msg);
+		}
+		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
 	
 	private static ServerMsg parseBroadcastMsg(ByteBuffer msg, IPCSignals cmd, int cookie)
@@ -151,5 +155,31 @@ public class XmmsMsgParser {
 				return parseTrackIdMsg(msg);
 		}
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
+	}
+	
+	private static ServerMsg requestTrackInfo(ByteBuffer msg)
+	{
+		msg.flip();
+		//Type is irrelevant here
+		msg.getInt();
+		return new ServerTrackIdMsg(SrvMsgTypes.TRACKID_MSG, msg.getInt());
+	}
+	
+	private static ServerMsg updatePlaylist(ByteBuffer msg)
+	{
+		ArrayList<Integer> ids = new ArrayList<Integer>();
+		msg.flip();
+		msg.getInt(); //TypeBla;
+		final int playListLen = msg.getInt();
+			
+		for(int i = 0; i < playListLen; i++)
+		{
+			msg.getInt();
+			ids.add(msg.getInt());
+		}
+		
+		PlayListInfoMsg retMsg = new PlayListInfoMsg(SrvMsgTypes.PLAYLIST_INFO_MSG);
+		retMsg.ids = ids;
+		return retMsg;
 	}
 }
