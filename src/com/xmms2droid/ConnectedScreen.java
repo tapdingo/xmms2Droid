@@ -39,6 +39,8 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.app.TabActivity;
 
 public class ConnectedScreen extends TabActivity {
@@ -127,6 +129,15 @@ public class ConnectedScreen extends TabActivity {
         
         m_playListAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, m_playList);
         m_playListView.setAdapter(m_playListAdapter);
+    }
+    
+    @Override
+    public Dialog onCreateDialog(int dialogId)
+    {
+    	ProgressDialog dialog = new ProgressDialog(this);
+    	dialog.setTitle("Loading Playlist...");
+    	dialog.setMessage("Updating PlaylistInformation");
+    	return dialog;
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
@@ -313,6 +324,7 @@ public class ConnectedScreen extends TabActivity {
 	private void handlePlayListInfoMsg(PlayListInfoMsg msg)
 	{
 		m_trackIds = msg.ids;
+		runOnUiThread(updatePlayListInformation);
 		runOnUiThread(updatePlayListDisplay);
 	}
 	
@@ -325,6 +337,7 @@ public class ConnectedScreen extends TabActivity {
 	{
 		m_playState = msg.getState();
 		runOnUiThread(updatePlaybackStateDisplay);
+		
 	}
 	
 	private void updateVolume()
@@ -385,6 +398,22 @@ public class ConnectedScreen extends TabActivity {
 					m_playListAdapter.add("UNKNOWN");	
 				}
 			}
+		}
+	};
+	
+	private Runnable updatePlayListInformation = new Runnable() {
+		@Override
+		public void run() {
+			showDialog(0);
+			
+			for (int i = 0; i<m_trackIds.size(); i++)
+			{
+				if (!m_tracks.containsKey(i))
+				{
+					requestTrackInfo(m_trackIds.get(i));
+				}
+			}
+			dismissDialog(0);
 		}
 	};
 	
