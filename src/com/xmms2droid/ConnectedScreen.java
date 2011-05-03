@@ -120,12 +120,13 @@ public class ConnectedScreen extends TabActivity {
         
         new Thread(readerTask).start();
         sayHello();
+        updatePlaylist();
         updateVolume();
         updatePlaybackStatus();
         updatePlayingTrack();
         registerPlayBackUpdate();
         registerTrackUpdate();
-        updatePlaylist();
+        
         
         m_playListAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, m_playList);
         m_playListView.setAdapter(m_playListAdapter);
@@ -287,13 +288,13 @@ public class ConnectedScreen extends TabActivity {
 		m_app.netModule.send(reqTrackUpdateMsg);
 	}
 	
-	private void requestTrackInfo(int id)
+	private void requestTrackInfo(int id, Boolean playlist)
 	{
 		if (0 == id)
 		{
 			return;
 		}
-		ByteBuffer trackInfoMsg = m_msgWriter.generateTrackInfoReqMsg(id);
+		ByteBuffer trackInfoMsg = m_msgWriter.generateTrackInfoReqMsg(id, playlist);
 		m_netModule.send(trackInfoMsg);
 	}
 	
@@ -312,13 +313,20 @@ public class ConnectedScreen extends TabActivity {
 	
 	private void handleTrackInfoMsg(ServerTrackInfoMsg msg)
 	{
-		m_curArtist = (String) msg.getTrackInfo().get("artist").get("plugin/id3v2");
-		m_curSong = (String) msg.getTrackInfo().get("title").get("plugin/id3v2");
-		
-		int id = (Integer) msg.getTrackInfo().get("id").get("server");
-		m_tracks.put(id, m_curArtist + " - " + m_curSong);
-		runOnUiThread(updatePlayListDisplay);
-		runOnUiThread(updateTrackDisplay);
+		final String artist = (String) msg.getTrackInfo().get("artist").get("plugin/id3v2");
+		final String song = (String) msg.getTrackInfo().get("title").get("plugin/id3v2");
+		if (!msg.getPlayListInfo())
+		{
+			m_curArtist = artist;
+			m_curSong = song;
+			runOnUiThread(updateTrackDisplay);
+		}
+		else
+		{
+			int id = (Integer) msg.getTrackInfo().get("id").get("server");
+			m_tracks.put(id, artist + " - " + song);
+			runOnUiThread(updatePlayListDisplay);
+		}
 	}
 	
 	private void handlePlayListInfoMsg(PlayListInfoMsg msg)
@@ -330,7 +338,7 @@ public class ConnectedScreen extends TabActivity {
 	
 	private void handleTrackIdMsg(ServerTrackIdMsg msg)
 	{
-		requestTrackInfo(msg.getId());
+		requestTrackInfo(msg.getId(), false);
 	}
 	
 	private void handlePlaybackStateMsg(ServerStateMsg msg)
@@ -410,7 +418,7 @@ public class ConnectedScreen extends TabActivity {
 			{
 				if (!m_tracks.containsKey(i))
 				{
-					requestTrackInfo(m_trackIds.get(i));
+					requestTrackInfo(m_trackIds.get(i), true);
 				}
 			}
 			dismissDialog(0);

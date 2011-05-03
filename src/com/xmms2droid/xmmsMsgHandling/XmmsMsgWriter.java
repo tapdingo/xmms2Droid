@@ -144,17 +144,19 @@ public class XmmsMsgWriter {
 		return trackReqMsg;
 	}
 	
-	public ByteBuffer generateTrackInfoReqMsg(int id)
+	public ByteBuffer generateTrackInfoReqMsg(int id, Boolean playlist)
 	{
 		//8 Byte List Info
 		//8 Byte Track ID Info
 		final int totalLen = 16;
+		final int cookie = 
+			playlist ? Xmms2Cookies.PLAYLIST_TRACKINFO_COOKIE : Xmms2Cookies.TRACKINFOREQ_COOKIE;
 		ByteBuffer trackInfoReq = ByteBuffer.allocate(totalLen + HEADER_LEN);
 		writeHeader(
 				trackInfoReq,
 				IPCObject.getObjectId(IPCObjects.MEDIALIB),
 				IPCCommandWrapper.getCommandID(MediaLibIPCCommands.INFO),
-				Xmms2Cookies.TRACKINFOREQ_COOKIE,
+				cookie,
 				totalLen);
 		putListHead(trackInfoReq, 1);
 		putInt32(trackInfoReq, id);

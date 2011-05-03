@@ -94,7 +94,9 @@ public class XmmsMsgParser {
 		switch(cookie)
 		{
 		case Xmms2Cookies.TRACKINFOREQ_COOKIE:
-			return parseTrackInfoMsg(msg);
+			return parseTrackInfoMsg(msg, false);
+		case Xmms2Cookies.PLAYLIST_TRACKINFO_COOKIE:
+			return parseTrackInfoMsg(msg, true);
 		}
 		return new ServerMsg(SrvMsgTypes.UNKNOWN);
 	}
@@ -117,7 +119,7 @@ public class XmmsMsgParser {
 		return new ServerTrackIdMsg(SrvMsgTypes.TRACKID_MSG, msg.getInt());
 	}
 	
-	private static ServerMsg parseTrackInfoMsg(ByteBuffer msg)
+	private static ServerMsg parseTrackInfoMsg(ByteBuffer msg, Boolean playlist)
 	{
 		//21 Is the size of the Track Unknown Error msg...
 		if (msg.capacity() == 21)
@@ -130,7 +132,7 @@ public class XmmsMsgParser {
 		//This msg type seems to be a little bit more complicated...
 		HashMap<String, HashMap<String, Object>> trackInfo = DictParser.parseTrackInfo(msg);
 		
-		return new ServerTrackInfoMsg(SrvMsgTypes.TRACKINFO_MSG, trackInfo);
+		return new ServerTrackInfoMsg(SrvMsgTypes.TRACKINFO_MSG, trackInfo, playlist);
 	}
 	
 	private static ServerMsg parsePlayListMsg(ByteBuffer msg, IPCSignals cmd, int cookie)
