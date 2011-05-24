@@ -5,7 +5,8 @@
     android:layout_height="fill_parent"
     >
     <TextView android:text="XMMS2 Remote" android:id="@+id/title" android:layout_width="fill_parent" android:layout_height="wrap_content"></TextView>
-    <EditText android:id="@+id/srvIp" android:layout_width="fill_parent" android:text="192.168.1.14" android:layout_height="wrap_content"></EditText>
-    <Button android:layout_width="fill_parent" android:text="Connect" android:layout_height="wrap_content" android:id="@+id/conButton"></Button>
+    <EditText android:text="192.168.1.14" android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/srvIp"></EditText>
+    <EditText android:text="8000" android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/srvPort"></EditText>
+    <Button android:id="@+id/conButton" android:layout_height="wrap_content" android:text="Connect" android:layout_width="fill_parent"></Button>
 </LinearLayout>
 

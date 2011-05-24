@@ -19,6 +19,8 @@
 package com.xmms2droid;
 
 import java.nio.ByteBuffer;
+import java.text.ChoiceFormat;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,6 +36,7 @@ import com.xmms2droid.xmmsMsgHandling.XmmsMsgParser;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgWriter;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -106,6 +109,8 @@ public class ConnectedScreen extends TabActivity {
         m_titleView = (TextView) findViewById(R.id.track);
         
         m_playListView = (ListView) findViewById(R.id.playlist);
+        m_playListView.setClickable(true);
+        m_playListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         
         TabHost.TabSpec spec = getTabHost().newTabSpec("tag1");
         spec.setContent(R.id.controls);
@@ -403,7 +408,8 @@ public class ConnectedScreen extends TabActivity {
 				}
 				else
 				{
-					m_playListAdapter.add("UNKNOWN");	
+					m_playListAdapter.add("UNKNOWN");
+					m_playListView.setSelection(5);
 				}
 			}
 		}

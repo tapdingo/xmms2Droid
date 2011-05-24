@@ -28,8 +28,8 @@ import android.widget.Button;
 public class StartScreen extends Activity {
 	
 	private EditText m_srvIp = null;
+	private EditText m_srvPort = null;
 	private Button m_conButton = null;
-	private int m_tgtPort = 8000; //TODO make the tgt port configurable
 	
     /** Called when the activity is first created. */
     @Override
@@ -38,6 +38,7 @@ public class StartScreen extends Activity {
         setContentView(R.layout.main);
         
         m_srvIp = (EditText) findViewById(R.id.srvIp);
+        m_srvPort = (EditText) findViewById(R.id.srvPort);
         m_conButton = (Button) findViewById(R.id.conButton);
         
         m_conButton.setOnClickListener(conButtonListener);
@@ -49,9 +50,13 @@ public class StartScreen extends Activity {
 		public void onClick(View arg0) {
 			m_conButton.setEnabled(false);
 			m_conButton.setClickable(false);
+			
+			int tgtPort = Integer.parseInt(m_srvPort.getText().toString());
 			m_conButton.setText("Connecting to: " + m_srvIp.getText().toString());
 			try {
-				if (!((XMMS2DroidApp) getApplication()).netModule.connect(m_srvIp.getText().toString(), m_tgtPort))
+				if (!((XMMS2DroidApp) getApplication()).netModule.connect(
+						m_srvIp.getText().toString(),
+						tgtPort))
 				{
 					m_conButton.setText("FAILED");
 				}
