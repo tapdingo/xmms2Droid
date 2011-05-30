@@ -176,6 +176,12 @@ public class XmmsMsgParser {
 			
 		for(int i = 0; i < playListLen; i++)
 		{
+			// Quick fix for playlist crash
+			//\TODO: encapsule the byte retrieving...
+			if (msg.remaining() < 8)
+			{
+				break;
+			}
 			msg.getInt();
 			ids.add(msg.getInt());
 		}
