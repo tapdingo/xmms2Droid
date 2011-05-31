@@ -118,6 +118,12 @@ public class DictParser {
 		int len = buf.getInt();
 		byte [] strTmp = new byte[len];
 		
+		// Simple catch to prevent crashes here...
+		if (len > 1024)
+		{
+			return "ERROR";
+		}
+		
 		buf.get(strTmp);
 		
 		if (strTmp[len - 1] == 0)
