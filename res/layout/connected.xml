@@ -2,17 +2,14 @@
 <TabHost xmlns:android="http://schemas.android.com/apk/res/android"
 android:layout_width="fill_parent"
 android:layout_height="fill_parent"
-android:id="@android:id/tabhost"
->
+android:id="@android:id/tabhost">
 	<LinearLayout
   	android:orientation="vertical"
   	android:layout_width="fill_parent"
   	android:layout_height="fill_parent">
-
 		<TabWidget android:id="@android:id/tabs"
 		android:layout_width="fill_parent"
-	  	android:layout_height="wrap_content"
-		/>
+	  	android:layout_height="wrap_content"/>
 			<FrameLayout android:id="@android:id/tabcontent"
 	  		android:layout_width="fill_parent"
 	  		android:layout_height="fill_parent"
@@ -46,20 +43,20 @@ android:id="@android:id/tabhost"
     					<TableRow 
 	  					android:layout_width="fill_parent"
 	  					android:layout_height="wrap_content">		
-		    				<Button android:layout_width="wrap_content" android:text="Prev" android:layout_height="wrap_content" android:id="@+id/prev"></Button>
-		    				<Button android:layout_width="wrap_content" android:text="Next" android:layout_height="wrap_content" android:id="@+id/next"></Button>
+		    				<Button android:layout_width="wrap_content" android:text="&lt;&lt;" android:layout_height="wrap_content" android:id="@+id/prev"></Button>
+		    				<Button android:layout_width="wrap_content" android:text="&gt;&gt;" android:layout_height="wrap_content" android:id="@+id/next"></Button>
     					</TableRow>
     					<TableRow>
 	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Volume:"/>
-	    					<TextView android:id="@+id/volume" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UNKNOWN" />
+	    					<TextView android:id="@+id/volume" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="UNKNOWN" />
     					</TableRow>
     					<TableRow>
 	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Artist:"/>
-	    					<TextView android:id="@+id/artist" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UNKNOWN" />
+	    					<TextView android:id="@+id/artist" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="UNKNOWN" />
     					</TableRow>
     					<TableRow>
 	    					<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Title:"/>
-	    					<TextView android:id="@+id/track" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UNKNOWN" />
+	    					<TextView android:id="@+id/track" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="UNKNOWN" />
     					</TableRow>
     				</TableLayout>
 				</LinearLayout>
