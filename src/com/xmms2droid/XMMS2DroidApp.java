@@ -23,6 +23,7 @@ import com.xmms2droid.NetModule;
 
 public class XMMS2DroidApp extends Application{
 	
+	public static final String	TAG	= "XMMS2Droid";
 	public NetModule netModule = new NetModule();
 	
 	@Override
