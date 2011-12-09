@@ -35,6 +35,7 @@ import com.xmms2droid.xmmsMsgHandling.ServerVolumeMsg;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgParser;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgWriter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
@@ -312,8 +313,13 @@ public class ConnectedScreen extends TabActivity {
 	private void handleVolumeMsg(ServerVolumeMsg msg)
 	{
 		HashMap<String, Integer> volumes = msg.getVolumeInformation();
-		m_volume = volumes.get("left");
-		runOnUiThread(updateVolumeDisplay);
+		try {
+			m_volume = volumes.get("left");
+			runOnUiThread(updateVolumeDisplay);
+		}
+		catch( NullPointerException e ) {
+			Log.w(XMMS2DroidApp.TAG,Log.getStackTraceString(e));
+		}
 	}
 	
 	private void handleTrackInfoMsg(ServerTrackInfoMsg msg)
