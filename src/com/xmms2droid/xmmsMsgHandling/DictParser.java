@@ -19,8 +19,13 @@
 package com.xmms2droid.xmmsMsgHandling;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+
+import android.util.Log;
+
+import com.xmms2droid.XMMS2DroidApp;
 
 class DictEntry {
 	public String key;
@@ -36,15 +41,20 @@ public class DictParser {
 		
 		HashMap<String, Integer> volumes = new HashMap<String, Integer>();
 		
-		for (int i = 0; i < len; i++)
-		{
-			String key = getString(buf);
-			
-			//TypeIdBla
-			buf.getInt();
-			
-			int val = buf.getInt();	
-			volumes.put(key, val);
+		try {
+			for (int i = 0; i < len; i++)
+			{
+				String key = getString(buf);
+				
+				//TypeIdBla
+				buf.getInt();
+				
+				int val = buf.getInt();	
+				volumes.put(key, val);
+			}
+		}
+		catch( BufferUnderflowException e ) {
+			Log.w(XMMS2DroidApp.TAG,Log.getStackTraceString(e));
 		}
 		return volumes;
 	}
