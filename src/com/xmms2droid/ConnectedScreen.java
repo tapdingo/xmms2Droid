@@ -19,13 +19,22 @@
 package com.xmms2droid;
 
 import java.nio.ByteBuffer;
-import java.text.ChoiceFormat;
-import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
-import com.xmms2droid.xmmsMsgHandling.IPCCommandWrapper;
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
+
 import com.xmms2droid.xmmsMsgHandling.PlayListInfoMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerStateMsg;
@@ -34,25 +43,12 @@ import com.xmms2droid.xmmsMsgHandling.ServerTrackInfoMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerVolumeMsg;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgParser;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgWriter;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.AbsListView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TabHost;
-import android.widget.TextView;
-import android.app.Dialog;
-import android.app.ProgressDialog;
-import android.app.TabActivity;
 
-public class ConnectedScreen extends TabActivity {
+public class ConnectedScreen extends Activity {
 	
 	private XMMS2DroidApp m_app = null;
 	private Button m_stopButton = null;
-	private Button m_startButton = null;
-	private Button m_pauseButton = null;
+	private Button m_playPauseButton = null;
 	private Button m_incVolButton = null;
 	private Button m_decVolButton = null;
 	private Button m_nextButton = null;
@@ -60,8 +56,12 @@ public class ConnectedScreen extends TabActivity {
 	private XmmsMsgWriter m_msgWriter = new XmmsMsgWriter();
 	
 	private NetModule m_netModule = null;
+	private boolean m_paused = false;
 	private boolean m_muted = false;
 	private Button m_muteButton = null;
+
+	private Drawable m_playDrawable = null;
+	private Drawable m_pauseDrawable = null;
 	
 	private int m_volume = 0;
 	private String m_playState = "UNKNOWN";
@@ -88,10 +88,8 @@ public class ConnectedScreen extends TabActivity {
         setContentView(R.layout.connected);
         m_stopButton = (Button) findViewById(R.id.stopButton);
         m_stopButton.setOnClickListener(stopListener);
-        m_startButton = (Button) findViewById(R.id.playButton);
-        m_startButton.setOnClickListener(startListener);
-        m_pauseButton = (Button) findViewById(R.id.pauseButton);
-        m_pauseButton.setOnClickListener(pauseListener);
+        m_playPauseButton = (Button) findViewById(R.id.playPauseButton);
+        m_playPauseButton.setOnClickListener(playPauseListener);
         
         m_incVolButton = (Button) findViewById(R.id.incVol);
         m_incVolButton.setOnClickListener(incVolListener);
@@ -112,18 +110,9 @@ public class ConnectedScreen extends TabActivity {
         m_playListView = (ListView) findViewById(R.id.playlist);
         m_playListView.setClickable(true);
         m_playListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        
-        TabHost.TabSpec spec = getTabHost().newTabSpec("tag1");
-        spec.setContent(R.id.controls);
-        spec.setIndicator("Controls");
-        getTabHost().addTab(spec);
-        
-        spec = getTabHost().newTabSpec("tag2");
-        spec.setContent(R.id.playlist);
-        spec.setIndicator("Playlist");
-        getTabHost().addTab(spec);
-        getTabHost().setCurrentTab(0);
-        
+
+        m_playDrawable = getResources().getDrawable(R.drawable.play);
+        m_pauseDrawable = getResources().getDrawable(R.drawable.pause);
         new Thread(readerTask).start();
         sayHello();
         updatePlaylist();
@@ -147,11 +136,12 @@ public class ConnectedScreen extends TabActivity {
     	return dialog;
     }
     
- private View.OnClickListener startListener = new View.OnClickListener() {
+    private View.OnClickListener playPauseListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View arg0) {
-			ByteBuffer startMsg = m_msgWriter.generatePlayMsg();
-			m_netModule.send(startMsg);
+			ByteBuffer playPauseMsg = (m_paused ? m_msgWriter.generatePlayMsg() : m_msgWriter.generatePauseMsg());
+			m_netModule.send(playPauseMsg);
+			m_paused = !m_paused;
 			updatePlaybackStatus();	
 		}
 	};
@@ -183,16 +173,6 @@ public class ConnectedScreen extends TabActivity {
 		public void onClick(View arg0) {
 			ByteBuffer stopMsg = m_msgWriter.generateStopMsg();
 			m_netModule.send(stopMsg);
-			updatePlaybackStatus();
-		}
-	};
-	
-	private View.OnClickListener pauseListener = new View.OnClickListener() {
-		
-		@Override
-		public void onClick(View arg0) {
-			ByteBuffer pauseMsg = m_msgWriter.generatePauseMsg();
-			m_netModule.send(pauseMsg);
 			updatePlaybackStatus();
 		}
 	};
@@ -313,13 +293,25 @@ public class ConnectedScreen extends TabActivity {
 	private void handleVolumeMsg(ServerVolumeMsg msg)
 	{
 		HashMap<String, Integer> volumes = msg.getVolumeInformation();
-		try {
-			m_volume = volumes.get("left");
-			runOnUiThread(updateVolumeDisplay);
+		if ( volumes == null ) {
+			Log.w(XMMS2DroidApp.TAG,"Could not get volume information");
+			return;
 		}
-		catch( NullPointerException e ) {
-			Log.w(XMMS2DroidApp.TAG,Log.getStackTraceString(e));
+		if ( volumes.containsKey("master") ) 		m_volume = volumes.get("master");
+		else if ( volumes.containsKey("front") ) 	m_volume = volumes.get("front");
+		else if ( volumes.containsKey("pcm") ) 		m_volume = volumes.get("pcm");
+		else if ( volumes.containsKey("left") ) 	m_volume = volumes.get("left");
+		else if ( volumes.size() > 0 ) {
+			for( Entry<String,Integer> volume : volumes.entrySet() ) {
+				m_volume = volume.getValue();
+				break;
+			}
 		}
+		else {
+			Log.w(XMMS2DroidApp.TAG,"Got empty volume information :-(");
+			return;
+		}
+		runOnUiThread(updateVolumeDisplay);
 	}
 	
 	private void handleTrackInfoMsg(ServerTrackInfoMsg msg)
@@ -355,6 +347,7 @@ public class ConnectedScreen extends TabActivity {
 	private void handlePlaybackStateMsg(ServerStateMsg msg)
 	{
 		m_playState = msg.getState();
+		m_paused = m_playState.equalsIgnoreCase("paused");
 		runOnUiThread(updatePlaybackStateDisplay);
 		
 	}
@@ -385,6 +378,7 @@ public class ConnectedScreen extends TabActivity {
 		@Override
 		public void run() {
 			m_playStateView.setText(m_playState);
+			m_playPauseButton.setBackgroundDrawable(m_paused ? m_playDrawable : m_pauseDrawable );
 		}
 	};
 	
