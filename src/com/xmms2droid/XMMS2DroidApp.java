@@ -21,7 +21,7 @@ package com.xmms2droid;
 import android.app.Application;
 import com.xmms2droid.NetModule;
 
-public class XMMS2DroidApp extends Application{
+public class XMMS2DroidApp extends Application {
 	
 	public static final String	TAG	= "XMMS2Droid";
 	public NetModule netModule = new NetModule();
