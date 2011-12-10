@@ -25,6 +25,7 @@ import java.util.HashMap;
 
 import android.util.Log;
 
+import com.xmms2droid.StaticHelpers;
 import com.xmms2droid.XMMS2DroidApp;
 
 class DictEntry {
@@ -38,23 +39,38 @@ public class DictParser {
 	{	
 		//LenBla
 		int len = buf.getInt();
-		
+		Log.w(XMMS2DroidApp.TAG,"Length = "+len);
+		Log.w(XMMS2DroidApp.TAG,"Position: "+buf.position() +", " + StaticHelpers.toHexString(buf.array()));
+		int typeId = -1;
 		HashMap<String, Integer> volumes = new HashMap<String, Integer>();
 		
 		try {
-			for (int i = 0; i < len; i++)
-			{
+			for (int i = 0; i < len && buf.hasRemaining(); i++) {
 				String key = getString(buf);
-				
-				//TypeIdBla
-				buf.getInt();
-				
-				int val = buf.getInt();	
-				volumes.put(key, val);
+
+				if ( buf.hasRemaining() ) {
+					Log.w(XMMS2DroidApp.TAG,"Position: "+buf.position() +", " + StaticHelpers.toHexString(buf.array()));
+					//TypeIdBla
+					typeId = buf.getInt();
+					Log.w(XMMS2DroidApp.TAG,"key="+key+", typeId = "+typeId);
+					Log.w(XMMS2DroidApp.TAG,"Position: "+buf.position() +", " + StaticHelpers.toHexString(buf.array()));
+
+					if ( buf.hasRemaining() ) {
+						int val = buf.getInt();	
+						volumes.put(key, val);
+						Log.w(XMMS2DroidApp.TAG,"Volume for '"+key+"' is = "+val);
+					}
+					else {
+						Log.w(XMMS2DroidApp.TAG,"I didn't expect to run out of buffer here...");
+						Log.w(XMMS2DroidApp.TAG,"Position: "+buf.position() +", " + StaticHelpers.toHexString(buf.array()));
+						int val = buf.getInt();	
+						volumes.put(key, val);
+					}
+				}
 			}
 		}
 		catch( BufferUnderflowException e ) {
-			Log.w(XMMS2DroidApp.TAG,Log.getStackTraceString(e));
+			Log.w(XMMS2DroidApp.TAG,"typeId = "+typeId+"\n"+Log.getStackTraceString(e));
 		}
 		return volumes;
 	}
