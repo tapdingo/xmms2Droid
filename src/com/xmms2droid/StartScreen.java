@@ -44,7 +44,7 @@ public class StartScreen extends Activity {
 
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-		setContentView(R.layout.main);
+		setContentView(R.layout.settings);
         
         m_srvIp = (EditText) findViewById(R.id.srvIp);
         m_srvIp.setText(prefs.getString(KEY_SERVER_IP, "192.168.1.1"));
