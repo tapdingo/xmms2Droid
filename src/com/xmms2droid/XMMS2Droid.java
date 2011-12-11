@@ -18,6 +18,7 @@ public class XMMS2Droid extends Activity {
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		Intent newIntent = new Intent(XMMS2Droid.this, ( connectToServer() ? ConnectedScreen.class : StartScreen.class ) );
 		startActivity(newIntent);
+		finish();
     }
 
     private boolean connectToServer() {
