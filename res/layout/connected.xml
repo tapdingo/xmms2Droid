@@ -59,7 +59,7 @@
 					android:paddingRight="10sp" />
 				<TextView
 					android:id="@+id/volume"
-					android:layout_width="30sp"
+					android:layout_width="36sp"
 					android:layout_height="wrap_content"
 					android:layout_gravity="center_horizontal|center_vertical"
 					android:layout_marginRight="3sp"
