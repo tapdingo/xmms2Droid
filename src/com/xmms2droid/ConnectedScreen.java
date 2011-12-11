@@ -21,6 +21,7 @@ package com.xmms2droid;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import android.app.Activity;
@@ -316,10 +317,18 @@ public class ConnectedScreen extends Activity {
 	
 	private void handleTrackInfoMsg(ServerTrackInfoMsg msg)
 	{
-		final String artist = (String) msg.getTrackInfo().get("artist").get("plugin/id3v2");
-		final String song = (String) msg.getTrackInfo().get("title").get("plugin/id3v2");
-		if (!msg.getPlayListInfo())
-		{
+		HashMap<String, Object> artistMap = msg.getTrackInfo().get("artist");
+		String pluginKey = "plugin/id3v2";
+		String artist = "unknown";
+		for( Entry<String,Object> artistEntry : artistMap.entrySet() ) {
+			if ( artistEntry.getKey().startsWith("plugin/") ) {
+				artist = (String) artistEntry.getValue();
+				pluginKey = artistEntry.getKey(); 
+			}
+		}
+		final String song = (String) msg.getTrackInfo().get("title").get(pluginKey);
+
+		if ( !msg.getPlayListInfo() ) {
 			m_curArtist = artist;
 			m_curSong = song;
 			runOnUiThread(updateTrackDisplay);
@@ -347,7 +356,7 @@ public class ConnectedScreen extends Activity {
 	private void handlePlaybackStateMsg(ServerStateMsg msg)
 	{
 		m_playState = msg.getState();
-		m_paused = m_playState.equalsIgnoreCase("paused");
+		m_paused = (m_playState.equalsIgnoreCase("paused") || m_playState.equalsIgnoreCase("stopped"));
 		runOnUiThread(updatePlaybackStateDisplay);
 		
 	}
