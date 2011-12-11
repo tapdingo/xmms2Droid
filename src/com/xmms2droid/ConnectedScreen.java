@@ -21,7 +21,6 @@ package com.xmms2droid;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import android.app.Activity;
@@ -34,6 +33,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.xmms2droid.xmmsMsgHandling.PlayListInfoMsg;
@@ -50,22 +50,20 @@ public class ConnectedScreen extends Activity {
 	private XMMS2DroidApp m_app = null;
 	private Button m_stopButton = null;
 	private Button m_playPauseButton = null;
-	private Button m_incVolButton = null;
-	private Button m_decVolButton = null;
 	private Button m_nextButton = null;
 	private Button m_prevButton = null;
+
+	private SeekBar m_volumeBar = null;
+	
 	private XmmsMsgWriter m_msgWriter = new XmmsMsgWriter();
 	
 	private NetModule m_netModule = null;
-	private boolean m_paused = false;
-	private boolean m_muted = false;
-	private Button m_muteButton = null;
+	private boolean m_paused = true;
 
 	private Drawable m_playDrawable = null;
 	private Drawable m_pauseDrawable = null;
 	
 	private int m_volume = 0;
-	private String m_playState = "UNKNOWN";
 	private TextView m_volumeView = null;
 	private TextView m_playStateView = null;
 	private String m_curSong = "UNKNOWN";
@@ -92,19 +90,15 @@ public class ConnectedScreen extends Activity {
         m_playPauseButton = (Button) findViewById(R.id.playPauseButton);
         m_playPauseButton.setOnClickListener(playPauseListener);
         
-        m_incVolButton = (Button) findViewById(R.id.incVol);
-        m_incVolButton.setOnClickListener(incVolListener);
-        m_decVolButton = (Button) findViewById(R.id.decVol);
-        m_decVolButton.setOnClickListener(decVolListener);
-        m_muteButton = (Button) findViewById(R.id.mute);
-        m_muteButton.setOnClickListener(muteListener);
+        m_volumeBar = (SeekBar) findViewById(R.id.volumeBar);
+        m_volumeBar.setOnSeekBarChangeListener(changeVolumeListener);
+
         m_nextButton = (Button) findViewById(R.id.next);
         m_nextButton.setOnClickListener(nextListener);
         m_prevButton = (Button) findViewById(R.id.prev);
         m_prevButton.setOnClickListener(prevListener);
         
         m_volumeView = (TextView) findViewById(R.id.volume);
-        m_playStateView = (TextView) findViewById(R.id.playStatus);
         m_artistView = (TextView) findViewById(R.id.artist);
         m_titleView = (TextView) findViewById(R.id.track);
         
@@ -178,54 +172,33 @@ public class ConnectedScreen extends Activity {
 		}
 	};
 	
-	private View.OnClickListener incVolListener = new View.OnClickListener() {
+	private SeekBar.OnSeekBarChangeListener changeVolumeListener = new SeekBar.OnSeekBarChangeListener() {
+
+		boolean suppressSendProgressChanges = false;
+		
 		@Override
-		public void onClick(View arg0) {
-			m_muted = false;
-			ByteBuffer incVolMsgLeft = m_msgWriter.generateVolumeMsg(m_volume + 10, "left");
-			m_netModule.send(incVolMsgLeft);
-			ByteBuffer incVolMsgRight = m_msgWriter.generateVolumeMsg(m_volume + 10, "right");
-			m_netModule.send(incVolMsgRight);
-			updateVolume();
-			m_muteButton.setText("Mute");
+		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+			m_volume = progress;
+			if ( !suppressSendProgressChanges ) setVolume();
+			m_volumeView.setText(Integer.toString(m_volume));
 		}
-	};
-	
-	private View.OnClickListener decVolListener = new View.OnClickListener() {
+
 		@Override
-		public void onClick(View arg0) {
-			m_muted = false;
-			ByteBuffer decVolMsgLeft = m_msgWriter.generateVolumeMsg(m_volume - 10, "left");
-			m_netModule.send(decVolMsgLeft);
-			ByteBuffer decVolMsgRight= m_msgWriter.generateVolumeMsg(m_volume - 10, "right");
-			m_netModule.send(decVolMsgRight);
-			updateVolume();
-			m_muteButton.setText("Mute");
+		public void onStartTrackingTouch(SeekBar seekBar) {
+			suppressSendProgressChanges = true;
 		}
-	};
-	
-	private View.OnClickListener muteListener = new View.OnClickListener() {
+
 		@Override
-		public void onClick(View arg0) {
-			
-			int newVol = 0;
-			
-			if (m_muted)
-			{
-				newVol = m_volume;
-				m_muted = false;
-				m_muteButton.setText("Mute");
-			}
-			else
-			{
-				newVol = 0;
-				m_muted = true;
-				m_muteButton.setText("Unmute");
-			}
-			ByteBuffer decVolMsgLeft = m_msgWriter.generateVolumeMsg(newVol, "left");
-			m_netModule.send(decVolMsgLeft);
-			ByteBuffer decVolMsgRight= m_msgWriter.generateVolumeMsg(newVol, "right");
-			m_netModule.send(decVolMsgRight);
+		public void onStopTrackingTouch(SeekBar seekBar) {
+			suppressSendProgressChanges = false;
+			setVolume();
+		}
+		
+		private void setVolume() {
+			ByteBuffer setVolMsgLeft = m_msgWriter.generateVolumeMsg(m_volume, "left");
+			m_netModule.send(setVolMsgLeft);
+			ByteBuffer setVolMsgRight= m_msgWriter.generateVolumeMsg(m_volume, "right");
+			m_netModule.send(setVolMsgRight);
 		}
 	};
 	
@@ -355,8 +328,8 @@ public class ConnectedScreen extends Activity {
 	
 	private void handlePlaybackStateMsg(ServerStateMsg msg)
 	{
-		m_playState = msg.getState();
-		m_paused = (m_playState.equalsIgnoreCase("paused") || m_playState.equalsIgnoreCase("stopped"));
+		String playState = msg.getState();
+		m_paused = !(playState.equalsIgnoreCase("playing"));
 		runOnUiThread(updatePlaybackStateDisplay);
 		
 	}
@@ -378,6 +351,7 @@ public class ConnectedScreen extends Activity {
 		@Override
 		public void run() {
 			m_volumeView.setText(String.valueOf(m_volume));
+			m_volumeBar.setProgress(m_volume);
 		}
 	};
 	
@@ -386,7 +360,6 @@ public class ConnectedScreen extends Activity {
 
 		@Override
 		public void run() {
-			m_playStateView.setText(m_playState);
 			m_playPauseButton.setBackgroundDrawable(m_paused ? m_playDrawable : m_pauseDrawable );
 		}
 	};
