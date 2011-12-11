@@ -15,10 +15,18 @@
 		android:name="XMMS2DroidApp" >
 		<activity
 			android:label="@string/app_name"
-			android:name="StartScreen" >
+			android:name="XMMS2Droid" >
 			<intent-filter >
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+		<activity
+			android:label="@string/app_name"
+			android:name="com.xmms2droid.StartScreen" >
+			<intent-filter >
+				<action android:name="com.xmms2droid.StartScreen" />
+				<category android:name="android.intent.category.DEFAULT" />
 			</intent-filter>
 		</activity>
 		<activity android:name="com.xmms2droid.ConnectedScreen" >

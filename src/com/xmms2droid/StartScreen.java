@@ -29,8 +29,8 @@ import android.widget.Button;
 
 public class StartScreen extends Activity {
 	
-	private static final String	KEY_SERVER_IP	= "XMMS2DroidServerIp";
-	private static final String	KEY_SERVER_PORT	= "XMMS2DroidServerPort";
+	public static final String	KEY_SERVER_IP	= "XMMS2DroidServerIp";
+	public static final String	KEY_SERVER_PORT	= "XMMS2DroidServerPort";
 	private EditText m_srvIp = null;
 	private EditText m_srvPort = null;
 	private Button m_conButton = null;
@@ -76,7 +76,7 @@ public class StartScreen extends Activity {
 				{
 					prefs.edit()
 							.putString(KEY_SERVER_IP, m_srvIp.getText().toString())
-							.putString(KEY_SERVER_PORT, m_srvPort.getText().toString())
+							.putInt(KEY_SERVER_PORT, tgtPort)
 							.commit();
 
 					Intent newIntent = new Intent(StartScreen.this, ConnectedScreen.class);
