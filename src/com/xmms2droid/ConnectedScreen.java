@@ -147,7 +147,6 @@ public class ConnectedScreen extends TabActivity {
     }
     
  private View.OnClickListener startListener = new View.OnClickListener() {
-		@Override
 		public void onClick(View arg0) {
 			ByteBuffer startMsg = m_msgWriter.generatePlayMsg();
 			m_netModule.send(startMsg);
@@ -157,7 +156,6 @@ public class ConnectedScreen extends TabActivity {
 	
 	private View.OnClickListener nextListener = new View.OnClickListener() {
 		
-		@Override
 		public void onClick(View v) {
 			ByteBuffer nextMsg = m_msgWriter.generateListChangeMsg(1);
 			m_netModule.send(nextMsg);
@@ -168,7 +166,6 @@ public class ConnectedScreen extends TabActivity {
 	
 	private View.OnClickListener prevListener = new View.OnClickListener() {
 		
-		@Override
 		public void onClick(View v) {
 			ByteBuffer nextMsg = m_msgWriter.generateListChangeMsg(-1);
 			m_netModule.send(nextMsg);
@@ -178,7 +175,6 @@ public class ConnectedScreen extends TabActivity {
 	};
     
     private View.OnClickListener stopListener = new View.OnClickListener() {	
-		@Override
 		public void onClick(View arg0) {
 			ByteBuffer stopMsg = m_msgWriter.generateStopMsg();
 			m_netModule.send(stopMsg);
@@ -188,7 +184,6 @@ public class ConnectedScreen extends TabActivity {
 	
 	private View.OnClickListener pauseListener = new View.OnClickListener() {
 		
-		@Override
 		public void onClick(View arg0) {
 			ByteBuffer pauseMsg = m_msgWriter.generatePauseMsg();
 			m_netModule.send(pauseMsg);
@@ -197,7 +192,6 @@ public class ConnectedScreen extends TabActivity {
 	};
 	
 	private View.OnClickListener incVolListener = new View.OnClickListener() {
-		@Override
 		public void onClick(View arg0) {
 			m_muted = false;
 			ByteBuffer incVolMsgLeft = m_msgWriter.generateVolumeMsg(m_volume + 10, "left");
@@ -210,7 +204,6 @@ public class ConnectedScreen extends TabActivity {
 	};
 	
 	private View.OnClickListener decVolListener = new View.OnClickListener() {
-		@Override
 		public void onClick(View arg0) {
 			m_muted = false;
 			ByteBuffer decVolMsgLeft = m_msgWriter.generateVolumeMsg(m_volume - 10, "left");
@@ -223,7 +216,6 @@ public class ConnectedScreen extends TabActivity {
 	};
 	
 	private View.OnClickListener muteListener = new View.OnClickListener() {
-		@Override
 		public void onClick(View arg0) {
 			
 			int newVol = 0;
@@ -367,7 +359,6 @@ public class ConnectedScreen extends TabActivity {
 	
 	private Runnable updateVolumeDisplay = new Runnable()
 	{
-		@Override
 		public void run() {
 			m_volumeView.setText(String.valueOf(m_volume));
 		}
@@ -376,7 +367,6 @@ public class ConnectedScreen extends TabActivity {
 	private Runnable updatePlaybackStateDisplay = new Runnable()
 	{
 
-		@Override
 		public void run() {
 			m_playStateView.setText(m_playState);
 		}
@@ -385,7 +375,6 @@ public class ConnectedScreen extends TabActivity {
 	private Runnable updateTrackDisplay = new Runnable()
 	{
 
-		@Override
 		public void run() {
 			m_artistView.setText(m_curArtist);
 			m_titleView.setText(m_curSong);
@@ -393,7 +382,6 @@ public class ConnectedScreen extends TabActivity {
 	};
 	
 	private Runnable updatePlayListDisplay = new Runnable() {
-		@Override
 		public void run() {
 			int len = m_trackIds.size();
 			m_playListAdapter.clear();
@@ -416,7 +404,6 @@ public class ConnectedScreen extends TabActivity {
 	};
 	
 	private Runnable updatePlayListInformation = new Runnable() {
-		@Override
 		public void run() {
 			showDialog(0);
 			
@@ -434,7 +421,6 @@ public class ConnectedScreen extends TabActivity {
 	private Runnable readerTask = new Runnable() {
 		
 		private ReadHandler m_readHandler = null;
-		@Override
 		public void run() {
 			m_readHandler = new ReadHandler(m_netModule);
 			

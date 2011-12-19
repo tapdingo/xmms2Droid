@@ -46,7 +46,6 @@ public class StartScreen extends Activity {
     
     private View.OnClickListener conButtonListener = new View.OnClickListener() {
 		
-		@Override
 		public void onClick(View arg0) {
 			m_conButton.setEnabled(false);
 			m_conButton.setClickable(false);
