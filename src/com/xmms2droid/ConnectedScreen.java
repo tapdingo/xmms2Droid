@@ -19,13 +19,23 @@
 package com.xmms2droid;
 
 import java.nio.ByteBuffer;
-import java.text.ChoiceFormat;
-import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
-import com.xmms2droid.xmmsMsgHandling.IPCCommandWrapper;
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.SeekBar;
+import android.widget.TextView;
+
 import com.xmms2droid.xmmsMsgHandling.PlayListInfoMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerStateMsg;
@@ -34,38 +44,27 @@ import com.xmms2droid.xmmsMsgHandling.ServerTrackInfoMsg;
 import com.xmms2droid.xmmsMsgHandling.ServerVolumeMsg;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgParser;
 import com.xmms2droid.xmmsMsgHandling.XmmsMsgWriter;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.AbsListView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TabHost;
-import android.widget.TextView;
-import android.app.Dialog;
-import android.app.ProgressDialog;
-import android.app.TabActivity;
 
-public class ConnectedScreen extends TabActivity {
-	
+public class ConnectedScreen extends Activity {
+
 	private XMMS2DroidApp m_app = null;
 	private Button m_stopButton = null;
-	private Button m_startButton = null;
-	private Button m_pauseButton = null;
-	private Button m_incVolButton = null;
-	private Button m_decVolButton = null;
+	private Button m_playPauseButton = null;
 	private Button m_nextButton = null;
 	private Button m_prevButton = null;
+
+	private SeekBar m_volumeBar = null;
+
 	private XmmsMsgWriter m_msgWriter = new XmmsMsgWriter();
-	
+
 	private NetModule m_netModule = null;
-	private boolean m_muted = false;
-	private Button m_muteButton = null;
-	
+	private boolean m_paused = true;
+
+	private Drawable m_playDrawable = null;
+	private Drawable m_pauseDrawable = null;
+
 	private int m_volume = 0;
-	private String m_playState = "UNKNOWN";
 	private TextView m_volumeView = null;
-	private TextView m_playStateView = null;
 	private String m_curSong = "UNKNOWN";
 	private String m_curArtist = "UNKNWON";
 	private TextView m_artistView = null;
@@ -75,54 +74,58 @@ public class ConnectedScreen extends TabActivity {
 	private ArrayAdapter<String> m_playListAdapter = null;
 	private HashMap<Integer, String> m_tracks = new HashMap<Integer, String>(); //Holds information about tracks;
 	private ArrayList<Integer> m_trackIds = new ArrayList<Integer>();
-	
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+		Log.w(XMMS2DroidApp.TAG,"onCreate");
         m_app = (XMMS2DroidApp) getApplication();
         m_netModule = m_app.netModule;
         
         setContentView(R.layout.connected);
         m_stopButton = (Button) findViewById(R.id.stopButton);
         m_stopButton.setOnClickListener(stopListener);
-        m_startButton = (Button) findViewById(R.id.playButton);
-        m_startButton.setOnClickListener(startListener);
-        m_pauseButton = (Button) findViewById(R.id.pauseButton);
-        m_pauseButton.setOnClickListener(pauseListener);
+        m_playPauseButton = (Button) findViewById(R.id.playPauseButton);
+        m_playPauseButton.setOnClickListener(playPauseListener);
         
-        m_incVolButton = (Button) findViewById(R.id.incVol);
-        m_incVolButton.setOnClickListener(incVolListener);
-        m_decVolButton = (Button) findViewById(R.id.decVol);
-        m_decVolButton.setOnClickListener(decVolListener);
-        m_muteButton = (Button) findViewById(R.id.mute);
-        m_muteButton.setOnClickListener(muteListener);
+        m_volumeBar = (SeekBar) findViewById(R.id.volumeBar);
+        m_volumeBar.setOnSeekBarChangeListener(changeVolumeListener);
+
         m_nextButton = (Button) findViewById(R.id.next);
         m_nextButton.setOnClickListener(nextListener);
         m_prevButton = (Button) findViewById(R.id.prev);
         m_prevButton.setOnClickListener(prevListener);
         
         m_volumeView = (TextView) findViewById(R.id.volume);
-        m_playStateView = (TextView) findViewById(R.id.playStatus);
         m_artistView = (TextView) findViewById(R.id.artist);
         m_titleView = (TextView) findViewById(R.id.track);
         
         m_playListView = (ListView) findViewById(R.id.playlist);
         m_playListView.setClickable(true);
         m_playListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        
-        TabHost.TabSpec spec = getTabHost().newTabSpec("tag1");
-        spec.setContent(R.id.controls);
-        spec.setIndicator("Controls");
-        getTabHost().addTab(spec);
-        
-        spec = getTabHost().newTabSpec("tag2");
-        spec.setContent(R.id.playlist);
-        spec.setIndicator("Playlist");
-        getTabHost().addTab(spec);
-        getTabHost().setCurrentTab(0);
-        
+
+        m_playDrawable = getResources().getDrawable(R.drawable.play);
+        m_pauseDrawable = getResources().getDrawable(R.drawable.pause);
+    }
+
+    @Override
+    public void onPause() {
+    	super.onPause();
+    	if (readerTask != null ) try {
+			readerTask.finish();
+			readerTask = null;
+		}
+		catch ( Exception e ) {
+			Log.w(XMMS2DroidApp.TAG,"Auto-generated catch block", e);
+		}
+    }
+
+    @Override
+    public void onResume() {
+    	super.onResume();
+		Log.w(XMMS2DroidApp.TAG,"onResume");
         new Thread(readerTask).start();
         sayHello();
         updatePlaylist();
@@ -132,11 +135,10 @@ public class ConnectedScreen extends TabActivity {
         registerPlayBackUpdate();
         registerTrackUpdate();
         
-        
         m_playListAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, m_playList);
         m_playListView.setAdapter(m_playListAdapter);
     }
-    
+
     @Override
     public Dialog onCreateDialog(int dialogId)
     {
@@ -146,16 +148,16 @@ public class ConnectedScreen extends TabActivity {
     	return dialog;
     }
     
- private View.OnClickListener startListener = new View.OnClickListener() {
+    private View.OnClickListener playPauseListener = new View.OnClickListener() {
 		public void onClick(View arg0) {
-			ByteBuffer startMsg = m_msgWriter.generatePlayMsg();
-			m_netModule.send(startMsg);
+			ByteBuffer playPauseMsg = (m_paused ? m_msgWriter.generatePlayMsg() : m_msgWriter.generatePauseMsg());
+			m_netModule.send(playPauseMsg);
+			m_paused = !m_paused;
 			updatePlaybackStatus();	
 		}
 	};
-	
+
 	private View.OnClickListener nextListener = new View.OnClickListener() {
-		
 		public void onClick(View v) {
 			ByteBuffer nextMsg = m_msgWriter.generateListChangeMsg(1);
 			m_netModule.send(nextMsg);
@@ -163,9 +165,9 @@ public class ConnectedScreen extends TabActivity {
 			m_netModule.send(tickleMsg);
 		}
 	};
-	
+
 	private View.OnClickListener prevListener = new View.OnClickListener() {
-		
+
 		public void onClick(View v) {
 			ByteBuffer nextMsg = m_msgWriter.generateListChangeMsg(-1);
 			m_netModule.send(nextMsg);
@@ -181,64 +183,34 @@ public class ConnectedScreen extends TabActivity {
 			updatePlaybackStatus();
 		}
 	};
-	
-	private View.OnClickListener pauseListener = new View.OnClickListener() {
-		
-		public void onClick(View arg0) {
-			ByteBuffer pauseMsg = m_msgWriter.generatePauseMsg();
-			m_netModule.send(pauseMsg);
-			updatePlaybackStatus();
+
+	private SeekBar.OnSeekBarChangeListener changeVolumeListener = new SeekBar.OnSeekBarChangeListener() {
+
+		boolean suppressSendProgressChanges = false;
+
+		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+			m_volume = progress;
+			if ( !suppressSendProgressChanges ) setVolume();
+			m_volumeView.setText(Integer.toString(m_volume));
+		}
+
+		public void onStartTrackingTouch(SeekBar seekBar) {
+			suppressSendProgressChanges = true;
+		}
+
+		public void onStopTrackingTouch(SeekBar seekBar) {
+			suppressSendProgressChanges = false;
+			setVolume();
+		}
+
+		private void setVolume() {
+			ByteBuffer setVolMsgLeft = m_msgWriter.generateVolumeMsg(m_volume, "left");
+			m_netModule.send(setVolMsgLeft);
+			ByteBuffer setVolMsgRight= m_msgWriter.generateVolumeMsg(m_volume, "right");
+			m_netModule.send(setVolMsgRight);
 		}
 	};
-	
-	private View.OnClickListener incVolListener = new View.OnClickListener() {
-		public void onClick(View arg0) {
-			m_muted = false;
-			ByteBuffer incVolMsgLeft = m_msgWriter.generateVolumeMsg(m_volume + 10, "left");
-			m_netModule.send(incVolMsgLeft);
-			ByteBuffer incVolMsgRight = m_msgWriter.generateVolumeMsg(m_volume + 10, "right");
-			m_netModule.send(incVolMsgRight);
-			updateVolume();
-			m_muteButton.setText("Mute");
-		}
-	};
-	
-	private View.OnClickListener decVolListener = new View.OnClickListener() {
-		public void onClick(View arg0) {
-			m_muted = false;
-			ByteBuffer decVolMsgLeft = m_msgWriter.generateVolumeMsg(m_volume - 10, "left");
-			m_netModule.send(decVolMsgLeft);
-			ByteBuffer decVolMsgRight= m_msgWriter.generateVolumeMsg(m_volume - 10, "right");
-			m_netModule.send(decVolMsgRight);
-			updateVolume();
-			m_muteButton.setText("Mute");
-		}
-	};
-	
-	private View.OnClickListener muteListener = new View.OnClickListener() {
-		public void onClick(View arg0) {
-			
-			int newVol = 0;
-			
-			if (m_muted)
-			{
-				newVol = m_volume;
-				m_muted = false;
-				m_muteButton.setText("Mute");
-			}
-			else
-			{
-				newVol = 0;
-				m_muted = true;
-				m_muteButton.setText("Unmute");
-			}
-			ByteBuffer decVolMsgLeft = m_msgWriter.generateVolumeMsg(newVol, "left");
-			m_netModule.send(decVolMsgLeft);
-			ByteBuffer decVolMsgRight= m_msgWriter.generateVolumeMsg(newVol, "right");
-			m_netModule.send(decVolMsgRight);
-		}
-	};
-	
+
 	private void handleMessage(ServerMsg msg)
 	{
 		switch (msg.getMsgType())
@@ -260,31 +232,31 @@ public class ConnectedScreen extends TabActivity {
 			break;
 		}
 	}
-	
+
 	private void sayHello()
 	{
 		ByteBuffer helloMsg = m_msgWriter.generateHelloMsg();
 		m_app.netModule.send(helloMsg);
 	}
-	
+
 	private void registerPlayBackUpdate()
 	{
 		ByteBuffer reqPlayUpdateMsg = m_msgWriter.generateReqPlaybackUpdateMsg();
 		m_app.netModule.send(reqPlayUpdateMsg);
 	}
-	
+
 	private void updatePlaylist()
 	{
 		ByteBuffer playListMsg = m_msgWriter.generatePlayListUpdateMsg("Default");
 		m_app.netModule.send(playListMsg);
 	}
-	
+
 	private void registerTrackUpdate()
 	{
 		ByteBuffer reqTrackUpdateMsg = m_msgWriter.generateReqTrackUpdateMsg();
 		m_app.netModule.send(reqTrackUpdateMsg);
 	}
-	
+
 	private void requestTrackInfo(int id, Boolean playlist)
 	{
 		if (0 == id)
@@ -294,26 +266,73 @@ public class ConnectedScreen extends TabActivity {
 		ByteBuffer trackInfoMsg = m_msgWriter.generateTrackInfoReqMsg(id, playlist);
 		m_netModule.send(trackInfoMsg);
 	}
-	
+
 	private void updatePlaybackStatus()
 	{
 		ByteBuffer reqStatusMsg = m_msgWriter.generateStatusReqMsg();
 		m_netModule.send(reqStatusMsg);
 	}
-	
+
+	private void gotoPosition( int id ) {
+		ByteBuffer nextMsg = m_msgWriter.generateListSetPositionMsg(id);
+		m_netModule.send(nextMsg);
+		ByteBuffer tickleMsg = m_msgWriter.generateTickleMsg();
+		m_netModule.send(tickleMsg);
+	}
+
 	private void handleVolumeMsg(ServerVolumeMsg msg)
 	{
 		HashMap<String, Integer> volumes = msg.getVolumeInformation();
-		m_volume = volumes.get("left");
+		if ( volumes == null ) {
+			Log.w(XMMS2DroidApp.TAG,"Could not get volume information");
+			return;
+		}
+		if ( volumes.containsKey("master") ) 		m_volume = volumes.get("master");
+		else if ( volumes.containsKey("front") ) 	m_volume = volumes.get("front");
+		else if ( volumes.containsKey("pcm") ) 		m_volume = volumes.get("pcm");
+		else if ( volumes.containsKey("left") ) 	m_volume = volumes.get("left");
+		else if ( volumes.size() > 0 ) {
+			for( Entry<String,Integer> volume : volumes.entrySet() ) {
+				m_volume = volume.getValue();
+				break;
+			}
+		}
+		else {
+			Log.w(XMMS2DroidApp.TAG,"Got empty volume information :-(");
+			return;
+		}
 		runOnUiThread(updateVolumeDisplay);
 	}
-	
+
 	private void handleTrackInfoMsg(ServerTrackInfoMsg msg)
 	{
-		final String artist = (String) msg.getTrackInfo().get("artist").get("plugin/id3v2");
-		final String song = (String) msg.getTrackInfo().get("title").get("plugin/id3v2");
-		if (!msg.getPlayListInfo())
-		{
+		HashMap<String, Object> infoMap = msg.getTrackInfo().get("artist");
+		String artist = "unknown";
+		String pluginKey = "plugin/id3v2";
+		if ( infoMap != null ) {
+			for( Entry<String,Object> artistEntry : infoMap.entrySet() ) {
+				if ( artistEntry.getKey().startsWith("plugin/") ) {
+					artist = (String) artistEntry.getValue();
+					pluginKey = artistEntry.getKey(); 
+				}
+			}
+		}
+
+		String song = "unknown"; 
+		infoMap = msg.getTrackInfo().get("title");
+		if ( infoMap != null ) {
+			song = (String) infoMap.get(pluginKey);
+			if ( song == null ) {
+				for( Entry<String,Object> artistEntry : infoMap.entrySet() ) {
+					if ( artistEntry.getKey().startsWith("plugin/") ) {
+						artist = (String) artistEntry.getValue();
+						pluginKey = artistEntry.getKey(); 
+					}
+				}
+			}
+		}
+
+		if ( !msg.getPlayListInfo() ) {
 			m_curArtist = artist;
 			m_curSong = song;
 			runOnUiThread(updateTrackDisplay);
@@ -321,71 +340,85 @@ public class ConnectedScreen extends TabActivity {
 		else
 		{
 			int id = (Integer) msg.getTrackInfo().get("id").get("server");
-			m_tracks.put(id, artist + " - " + song);
+			StringBuilder sb = new StringBuilder();
+			if ( artist != null ) sb.append(artist);
+			if ( song != null ) {
+				if ( sb.length() > 0 ) sb.append(" - ");
+				sb.append(song);
+			}
+			m_tracks.put(id, sb.toString());
 			runOnUiThread(updatePlayListDisplay);
 		}
 	}
-	
+
 	private void handlePlayListInfoMsg(PlayListInfoMsg msg)
 	{
 		m_trackIds = msg.ids;
 		runOnUiThread(updatePlayListInformation);
 		runOnUiThread(updatePlayListDisplay);
 	}
-	
+
 	private void handleTrackIdMsg(ServerTrackIdMsg msg)
 	{
 		requestTrackInfo(msg.getId(), false);
 	}
-	
+
 	private void handlePlaybackStateMsg(ServerStateMsg msg)
 	{
-		m_playState = msg.getState();
+		String playState = msg.getState();
+		m_paused = !(playState.equalsIgnoreCase("playing"));
 		runOnUiThread(updatePlaybackStateDisplay);
-		
+
 	}
-	
+
 	private void updateVolume()
 	{
 		ByteBuffer volReqMsg = m_msgWriter.generateVolReqMsg();
 		m_app.netModule.send(volReqMsg);
 	}
-	
+
 	private void updatePlayingTrack()
 	{
 		ByteBuffer trackReqMsg = m_msgWriter.generateTrackReqMsg();
 		m_app.netModule.send(trackReqMsg);
 	}
-	
+
 	private Runnable updateVolumeDisplay = new Runnable()
 	{
 		public void run() {
 			m_volumeView.setText(String.valueOf(m_volume));
+			m_volumeBar.setProgress(m_volume);
 		}
 	};
-	
+
 	private Runnable updatePlaybackStateDisplay = new Runnable()
 	{
 
 		public void run() {
-			m_playStateView.setText(m_playState);
+			m_playPauseButton.setBackgroundDrawable(m_paused ? m_playDrawable : m_pauseDrawable );
 		}
 	};
-	
+
 	private Runnable updateTrackDisplay = new Runnable()
 	{
 
 		public void run() {
 			m_artistView.setText(m_curArtist);
 			m_titleView.setText(m_curSong);
+			updatePlaylist();
 		}
 	};
-	
+
 	private Runnable updatePlayListDisplay = new Runnable() {
 		public void run() {
 			int len = m_trackIds.size();
+
+			int playlistIndex = m_playListView.getFirstVisiblePosition();
+			View v = m_playListView.getChildAt(0);
+			int playlistTop = (v == null) ? 0 : v.getTop();
+
 			m_playListAdapter.clear();
-			
+
 			for (int i = 0; i < len; i++)
 			{
 				int id = m_trackIds.get(i);		
@@ -400,31 +433,43 @@ public class ConnectedScreen extends TabActivity {
 					m_playListView.setSelection(5);
 				}
 			}
+
+			m_playListView.setSelectionFromTop(playlistIndex, playlistTop);
 		}
 	};
-	
+
 	private Runnable updatePlayListInformation = new Runnable() {
 		public void run() {
-			showDialog(0);
-			
-			for (int i = 0; i<m_trackIds.size(); i++)
-			{
-				if (!m_tracks.containsKey(i))
+			// Put this in a try catch because it might happen after we've closed the GUI.
+			try {
+				showDialog(0);
+
+				for (int i = 0; i<m_trackIds.size(); i++)
 				{
-					requestTrackInfo(m_trackIds.get(i), true);
+					if (!m_tracks.containsKey(i))
+					{
+						requestTrackInfo(m_trackIds.get(i), true);
+					}
 				}
+				dismissDialog(0);
 			}
-			dismissDialog(0);
+			catch( Exception e ) {
+				Log.i(XMMS2DroidApp.TAG,Log.getStackTraceString(e));
+			};
+
 		}
 	};
-	
-	private Runnable readerTask = new Runnable() {
-		
+
+	private XmmsMsgReader readerTask = new XmmsMsgReader();
+
+	public class XmmsMsgReader implements Runnable {
 		private ReadHandler m_readHandler = null;
+		private boolean running = true;
+
 		public void run() {
 			m_readHandler = new ReadHandler(m_netModule);
-			
-			while(true)
+
+			while(running)
 			{
 				if (m_readHandler.readMsg())
 				{
@@ -436,6 +481,10 @@ public class ConnectedScreen extends TabActivity {
 				}
 			}
 		}
-	};
 
+		public void finish() {
+			running = false;
+		}
+
+	}
 }

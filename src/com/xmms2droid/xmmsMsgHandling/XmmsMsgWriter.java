@@ -164,7 +164,12 @@ public class XmmsMsgWriter {
 		return trackInfoReq;
 	}
 
-	public ByteBuffer generateListChangeMsg(int i) 
+	/**
+	 * Request the play list to move by a relative amount.
+	 * @param relativeOffset
+	 * @return
+	 */
+	public ByteBuffer generateListChangeMsg(int relativeOffset) 
 	{
 		ByteBuffer listChangeReq = ByteBuffer.allocate(32);
 		writeHeader(
@@ -174,7 +179,27 @@ public class XmmsMsgWriter {
 				Xmms2Cookies.LISTCHANGE_REL_COOKIE,
 				16);
 		putListHead(listChangeReq, 1);
-		putInt32(listChangeReq, i);
+		putInt32(listChangeReq, relativeOffset);
+		listChangeReq.flip();
+		return listChangeReq;
+	}
+
+	/**
+	 * Request the play list to move to an absolute position.
+	 * @param newPosition
+	 * @return
+	 */
+	public ByteBuffer generateListSetPositionMsg(int newPosition) 
+	{
+		ByteBuffer listChangeReq = ByteBuffer.allocate(32);
+		writeHeader(
+				listChangeReq,
+				IPCObject.getObjectId(IPCObjects.PLAYLIST),
+				IPCCommandWrapper.getCommandID(PlayListIPCCommands.SET_POS),
+				Xmms2Cookies.LISTCHANGE_ABS_COOKIE,
+				16);
+		putListHead(listChangeReq, 1);
+		putInt32(listChangeReq, newPosition);
 		listChangeReq.flip();
 		return listChangeReq;
 	}

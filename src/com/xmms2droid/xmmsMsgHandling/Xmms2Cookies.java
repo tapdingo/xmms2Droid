@@ -18,4 +18,5 @@ public class Xmms2Cookies {
 	public static final int REGTRACKUPDATE_COOKIE = 13;
 	public static final int PLAYLIST_REQUEST_COOKIE = 14;
 	public static final int PLAYLIST_TRACKINFO_COOKIE = 15;
+	public static final int LISTCHANGE_ABS_COOKIE = 16;
 }

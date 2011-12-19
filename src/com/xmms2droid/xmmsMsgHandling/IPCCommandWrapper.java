@@ -17,7 +17,7 @@
  */
 
 package com.xmms2droid.xmmsMsgHandling;
-import android.util.Log; 
+import android.util.Log;
 
 
 enum MainIPCCommands {
@@ -82,7 +82,7 @@ public class IPCCommandWrapper {
 	
 	private static final int shiftFac = 32;
 	
-	public static int getCommandID(java.lang.Enum cmd)
+	public static int getCommandID(@SuppressWarnings("rawtypes") java.lang.Enum cmd)
 	{
 		Log.d("Wrapper", "Command: " + cmd.ordinal() + shiftFac);
 		return cmd.ordinal() + shiftFac;

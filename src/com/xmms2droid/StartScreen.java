@@ -20,29 +20,41 @@ package com.xmms2droid;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Button;
 
 public class StartScreen extends Activity {
 	
+	public static final String	KEY_SERVER_IP	= "XMMS2DroidServerIp";
+	public static final String	KEY_SERVER_PORT	= "XMMS2DroidServerPort";
 	private EditText m_srvIp = null;
 	private EditText m_srvPort = null;
 	private Button m_conButton = null;
+
+	public static SharedPreferences prefs;
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+		setContentView(R.layout.settings);
         
         m_srvIp = (EditText) findViewById(R.id.srvIp);
+        m_srvIp.setText(prefs.getString(KEY_SERVER_IP, "192.168.1.1"));
         m_srvPort = (EditText) findViewById(R.id.srvPort);
+        m_srvPort.setText(prefs.getString(KEY_SERVER_PORT, "9667"));
         m_conButton = (Button) findViewById(R.id.conButton);
         
         m_conButton.setOnClickListener(conButtonListener);
     }
+
     
     private View.OnClickListener conButtonListener = new View.OnClickListener() {
 		
@@ -60,7 +72,12 @@ public class StartScreen extends Activity {
 					m_conButton.setText("FAILED");
 				}
 				else
-				{	
+				{
+					prefs.edit()
+							.putString(KEY_SERVER_IP, m_srvIp.getText().toString())
+							.putInt(KEY_SERVER_PORT, tgtPort)
+							.commit();
+
 					Intent newIntent = new Intent(StartScreen.this, ConnectedScreen.class);
 					startActivity(newIntent);
 					m_conButton.setText("CONNECTED");

@@ -1,17 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="com.xmms2droid"
-      android:versionCode="3" android:versionName="1.02">
-    <uses-sdk android:minSdkVersion="3" />
-    <application android:label="@string/app_name" android:permission="android.permission.INTERNET" android:name="XMMS2DroidApp" android:icon="@drawable/icon" android:debuggable="false" android:enabled="true" android:hasCode="true">
-        <activity android:name="StartScreen">
-            <intent-filter>
-             	<action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name="com.xmms2droid.ConnectedScreen"></activity>
-    </application>
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-</manifest> 
+	package="com.xmms2droid"
+	android:versionCode="4"
+	android:versionName="1.03" >
+	<uses-sdk
+		android:minSdkVersion="4"
+		android:targetSdkVersion="8" />
+	<application
+		android:name="XMMS2DroidApp"
+		android:debuggable="true"
+		android:enabled="true"
+		android:hasCode="true"
+		android:icon="@drawable/icon"
+		android:label="@string/app_name"
+		android:theme="@android:style/Theme.NoTitleBar" >
+		<activity
+			android:name="XMMS2Droid"
+			android:label="@string/app_name" >
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+		<activity
+			android:name="com.xmms2droid.StartScreen"
+			android:label="@string/app_name" >
+			<intent-filter>
+				<action android:name="com.xmms2droid.StartScreen" />
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
+		</activity>
+		<activity android:name="com.xmms2droid.ConnectedScreen" >
+			<intent-filter>
+				<action android:name="com.xmms2droid.ConnectedScreen" />
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
+		</activity>
+	</application>
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
+</manifest>
