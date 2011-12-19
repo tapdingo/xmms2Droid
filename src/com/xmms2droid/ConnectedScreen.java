@@ -65,7 +65,6 @@ public class ConnectedScreen extends Activity {
 	
 	private int m_volume = 0;
 	private TextView m_volumeView = null;
-	private TextView m_playStateView = null;
 	private String m_curSong = "UNKNOWN";
 	private String m_curArtist = "UNKNWON";
 	private TextView m_artistView = null;
@@ -81,6 +80,7 @@ public class ConnectedScreen extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+		Log.w(XMMS2DroidApp.TAG,"onCreate");
         m_app = (XMMS2DroidApp) getApplication();
         m_netModule = m_app.netModule;
         
@@ -108,6 +108,24 @@ public class ConnectedScreen extends Activity {
 
         m_playDrawable = getResources().getDrawable(R.drawable.play);
         m_pauseDrawable = getResources().getDrawable(R.drawable.pause);
+    }
+
+    @Override
+    public void onPause() {
+    	super.onPause();
+    	if (readerTask != null ) try {
+			readerTask.finish();
+			readerTask = null;
+		}
+		catch ( Exception e ) {
+			Log.w(XMMS2DroidApp.TAG,"Auto-generated catch block", e);
+		}
+    }
+
+    @Override
+    public void onResume() {
+    	super.onResume();
+		Log.w(XMMS2DroidApp.TAG,"onResume");
         new Thread(readerTask).start();
         sayHello();
         updatePlaylist();
@@ -117,11 +135,10 @@ public class ConnectedScreen extends Activity {
         registerPlayBackUpdate();
         registerTrackUpdate();
         
-        
         m_playListAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, m_playList);
         m_playListView.setAdapter(m_playListAdapter);
     }
-    
+
     @Override
     public Dialog onCreateDialog(int dialogId)
     {
@@ -142,7 +159,6 @@ public class ConnectedScreen extends Activity {
 	};
 	
 	private View.OnClickListener nextListener = new View.OnClickListener() {
-		
 		@Override
 		public void onClick(View v) {
 			ByteBuffer nextMsg = m_msgWriter.generateListChangeMsg(1);
@@ -263,6 +279,13 @@ public class ConnectedScreen extends Activity {
 		ByteBuffer reqStatusMsg = m_msgWriter.generateStatusReqMsg();
 		m_netModule.send(reqStatusMsg);
 	}
+
+	private void gotoPosition( int id ) {
+		ByteBuffer nextMsg = m_msgWriter.generateListSetPositionMsg(id);
+		m_netModule.send(nextMsg);
+		ByteBuffer tickleMsg = m_msgWriter.generateTickleMsg();
+		m_netModule.send(tickleMsg);
+	}
 	
 	private void handleVolumeMsg(ServerVolumeMsg msg)
 	{
@@ -290,16 +313,31 @@ public class ConnectedScreen extends Activity {
 	
 	private void handleTrackInfoMsg(ServerTrackInfoMsg msg)
 	{
-		HashMap<String, Object> artistMap = msg.getTrackInfo().get("artist");
-		String pluginKey = "plugin/id3v2";
+		HashMap<String, Object> infoMap = msg.getTrackInfo().get("artist");
 		String artist = "unknown";
-		for( Entry<String,Object> artistEntry : artistMap.entrySet() ) {
-			if ( artistEntry.getKey().startsWith("plugin/") ) {
-				artist = (String) artistEntry.getValue();
-				pluginKey = artistEntry.getKey(); 
+		String pluginKey = "plugin/id3v2";
+		if ( infoMap != null ) {
+			for( Entry<String,Object> artistEntry : infoMap.entrySet() ) {
+				if ( artistEntry.getKey().startsWith("plugin/") ) {
+					artist = (String) artistEntry.getValue();
+					pluginKey = artistEntry.getKey(); 
+				}
 			}
 		}
-		final String song = (String) msg.getTrackInfo().get("title").get(pluginKey);
+
+		String song = "unknown"; 
+		infoMap = msg.getTrackInfo().get("title");
+		if ( infoMap != null ) {
+			song = (String) infoMap.get(pluginKey);
+			if ( song == null ) {
+				for( Entry<String,Object> artistEntry : infoMap.entrySet() ) {
+					if ( artistEntry.getKey().startsWith("plugin/") ) {
+						artist = (String) artistEntry.getValue();
+						pluginKey = artistEntry.getKey(); 
+					}
+				}
+			}
+		}
 
 		if ( !msg.getPlayListInfo() ) {
 			m_curArtist = artist;
@@ -309,7 +347,13 @@ public class ConnectedScreen extends Activity {
 		else
 		{
 			int id = (Integer) msg.getTrackInfo().get("id").get("server");
-			m_tracks.put(id, artist + " - " + song);
+			StringBuilder sb = new StringBuilder();
+			if ( artist != null ) sb.append(artist);
+			if ( song != null ) {
+				if ( sb.length() > 0 ) sb.append(" - ");
+				sb.append(song);
+			}
+			m_tracks.put(id, sb.toString());
 			runOnUiThread(updatePlayListDisplay);
 		}
 	}
@@ -371,6 +415,7 @@ public class ConnectedScreen extends Activity {
 		public void run() {
 			m_artistView.setText(m_curArtist);
 			m_titleView.setText(m_curSong);
+			updatePlaylist();
 		}
 	};
 	
@@ -378,6 +423,11 @@ public class ConnectedScreen extends Activity {
 		@Override
 		public void run() {
 			int len = m_trackIds.size();
+
+			int playlistIndex = m_playListView.getFirstVisiblePosition();
+			View v = m_playListView.getChildAt(0);
+			int playlistTop = (v == null) ? 0 : v.getTop();
+			
 			m_playListAdapter.clear();
 			
 			for (int i = 0; i < len; i++)
@@ -394,33 +444,45 @@ public class ConnectedScreen extends Activity {
 					m_playListView.setSelection(5);
 				}
 			}
+
+			m_playListView.setSelectionFromTop(playlistIndex, playlistTop);
 		}
 	};
 	
 	private Runnable updatePlayListInformation = new Runnable() {
 		@Override
 		public void run() {
-			showDialog(0);
-			
-			for (int i = 0; i<m_trackIds.size(); i++)
-			{
-				if (!m_tracks.containsKey(i))
+			// Put this in a try catch because it might happen after we've closed the GUI.
+			try {
+				showDialog(0);
+
+				for (int i = 0; i<m_trackIds.size(); i++)
 				{
-					requestTrackInfo(m_trackIds.get(i), true);
+					if (!m_tracks.containsKey(i))
+					{
+						requestTrackInfo(m_trackIds.get(i), true);
+					}
 				}
+				dismissDialog(0);
 			}
-			dismissDialog(0);
+			catch( Exception e ) {
+				Log.i(XMMS2DroidApp.TAG,Log.getStackTraceString(e));
+			};
+			
 		}
 	};
 	
-	private Runnable readerTask = new Runnable() {
-		
+	private XmmsMsgReader readerTask = new XmmsMsgReader();
+
+	public class XmmsMsgReader implements Runnable {
 		private ReadHandler m_readHandler = null;
+		private boolean running = true;
+
 		@Override
 		public void run() {
 			m_readHandler = new ReadHandler(m_netModule);
 			
-			while(true)
+			while(running)
 			{
 				if (m_readHandler.readMsg())
 				{
@@ -432,6 +494,10 @@ public class ConnectedScreen extends Activity {
 				}
 			}
 		}
-	};
-
+		
+		public void finish() {
+			running = false;
+		}
+		
+	}
 }
