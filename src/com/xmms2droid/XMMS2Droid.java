@@ -24,7 +24,7 @@ public class XMMS2Droid extends Activity {
     private boolean connectToServer() {
 		try {
 			String serverIp = prefs.getString(StartScreen.KEY_SERVER_IP, null);
-			int serverPort = Integer.parseInt(prefs.getString(StartScreen.KEY_SERVER_PORT, "9997"));
+			int serverPort = prefs.getInt(StartScreen.KEY_SERVER_PORT, 9997);
 			return ( ((XMMS2DroidApp) getApplication()).netModule.connect( serverIp, serverPort));
 		} catch (Exception e) {
 			Log.w(XMMS2DroidApp.TAG,Log.getStackTraceString(e));
