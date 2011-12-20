@@ -45,12 +45,17 @@ public class StartScreen extends Activity {
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		setContentView(R.layout.settings);
-        
+
         m_srvIp = (EditText) findViewById(R.id.srvIp);
-        m_srvIp.setText(prefs.getString(KEY_SERVER_IP, "192.168.1.1"));
         m_srvPort = (EditText) findViewById(R.id.srvPort);
-        m_srvPort.setText(prefs.getString(KEY_SERVER_PORT, "9667"));
         m_conButton = (Button) findViewById(R.id.conButton);
+		try {
+	        m_srvIp.setText(prefs.getString(KEY_SERVER_IP, "192.168.1.1"));
+	        m_srvPort.setText(prefs.getString(KEY_SERVER_PORT, "9667"));
+		}
+		catch( Exception e ) {
+			
+		}
         
         m_conButton.setOnClickListener(conButtonListener);
     }
