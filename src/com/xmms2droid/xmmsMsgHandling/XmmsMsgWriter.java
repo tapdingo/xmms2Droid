@@ -109,7 +109,7 @@ public class XmmsMsgWriter {
 	
 	private ByteBuffer allocateMinimalPacket()
 	{
-		return ByteBuffer.allocate(20);
+		return ByteBuffer.allocate(24);
 	}
 	
 	public ByteBuffer generateHelloMsg()
@@ -271,7 +271,10 @@ public class XmmsMsgWriter {
 				objectID,
 				commandID,
 				cookie,
-				4);
+				8);
+		
+		// Add an empty argument list
+		request.putInt(6); 
 		request.putInt(0);
 		request.flip();
 		return request;
